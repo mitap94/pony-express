@@ -36,9 +36,18 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ClientAPI\ClientAPI.csproj">
-      <ServiceLaunchUrl>http://localhost:{ServicePort}/</ServiceLaunchUrl>
+    <ProjectReference Include="..\AdminAPI\AdminAPI.csproj">
+      <ServiceLaunchUrl>http://localhost:{ServicePort}/swagger</ServiceLaunchUrl>
     </ProjectReference>
+    <ProjectReference Include="..\ClientAPI\ClientAPI.csproj">
+      <ServiceLaunchUrl>http://localhost:{ServicePort}/swagger</ServiceLaunchUrl>
+    </ProjectReference>
+    <ProjectReference Include="..\CourierAPI\CourierAPI.csproj">
+      <ServiceLaunchUrl>http://localhost:{ServicePort}/swagger</ServiceLaunchUrl>
+    </ProjectReference>
+    <ProjectReference Include="..\Parcels\Parcels.csproj" />
+    <ProjectReference Include="..\Requests\Requests.csproj" />
+    <ProjectReference Include="..\Users\Users.csproj" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
   <PropertyGroup>

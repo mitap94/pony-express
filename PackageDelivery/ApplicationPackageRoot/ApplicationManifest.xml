@@ -1,11 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ApplicationManifest ApplicationTypeName="PackageDeliveryType"
-                     ApplicationTypeVersion="1.0.0"
-                     xmlns="http://schemas.microsoft.com/2011/01/fabric"
-                     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<ApplicationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ApplicationTypeName="PackageDeliveryType" ApplicationTypeVersion="1.0.0" xmlns="http://schemas.microsoft.com/2011/01/fabric">
   <Parameters>
     <Parameter Name="ClientAPI_ASPNETCORE_ENVIRONMENT" DefaultValue="" />
+    <Parameter Name="CourierAPI_ASPNETCORE_ENVIRONMENT" DefaultValue="" />
+    <Parameter Name="AdminAPI_ASPNETCORE_ENVIRONMENT" DefaultValue="" />
+    <Parameter Name="Parcels_ASPNETCORE_ENVIRONMENT" DefaultValue="" />
+    <Parameter Name="Requests_ASPNETCORE_ENVIRONMENT" DefaultValue="" />
+    <Parameter Name="Users_ASPNETCORE_ENVIRONMENT" DefaultValue="" />
   </Parameters>
   <!-- Import the ServiceManifest from the ServicePackage. The ServiceManifestName and ServiceManifestVersion 
        should match the Name and Version attributes of the ServiceManifest element defined in the 
@@ -15,6 +16,41 @@
     <ConfigOverrides />
     <EnvironmentOverrides CodePackageRef="code">
       <EnvironmentVariable Name="ASPNETCORE_ENVIRONMENT" Value="[ClientAPI_ASPNETCORE_ENVIRONMENT]" />
+    </EnvironmentOverrides>
+  </ServiceManifestImport>
+  <ServiceManifestImport>
+    <ServiceManifestRef ServiceManifestName="CourierAPIPkg" ServiceManifestVersion="1.0.0" />
+    <ConfigOverrides />
+    <EnvironmentOverrides CodePackageRef="code">
+      <EnvironmentVariable Name="ASPNETCORE_ENVIRONMENT" Value="[CourierAPI_ASPNETCORE_ENVIRONMENT]" />
+    </EnvironmentOverrides>
+  </ServiceManifestImport>
+  <ServiceManifestImport>
+    <ServiceManifestRef ServiceManifestName="AdminAPIPkg" ServiceManifestVersion="1.0.0" />
+    <ConfigOverrides />
+    <EnvironmentOverrides CodePackageRef="code">
+      <EnvironmentVariable Name="ASPNETCORE_ENVIRONMENT" Value="[AdminAPI_ASPNETCORE_ENVIRONMENT]" />
+    </EnvironmentOverrides>
+  </ServiceManifestImport>
+  <ServiceManifestImport>
+    <ServiceManifestRef ServiceManifestName="ParcelsPkg" ServiceManifestVersion="1.0.0" />
+    <ConfigOverrides />
+    <EnvironmentOverrides CodePackageRef="code">
+      <EnvironmentVariable Name="ASPNETCORE_ENVIRONMENT" Value="[Parcels_ASPNETCORE_ENVIRONMENT]" />
+    </EnvironmentOverrides>
+  </ServiceManifestImport>
+  <ServiceManifestImport>
+    <ServiceManifestRef ServiceManifestName="RequestsPkg" ServiceManifestVersion="1.0.0" />
+    <ConfigOverrides />
+    <EnvironmentOverrides CodePackageRef="code">
+      <EnvironmentVariable Name="ASPNETCORE_ENVIRONMENT" Value="[Requests_ASPNETCORE_ENVIRONMENT]" />
+    </EnvironmentOverrides>
+  </ServiceManifestImport>
+  <ServiceManifestImport>
+    <ServiceManifestRef ServiceManifestName="UsersPkg" ServiceManifestVersion="1.0.0" />
+    <ConfigOverrides />
+    <EnvironmentOverrides CodePackageRef="code">
+      <EnvironmentVariable Name="ASPNETCORE_ENVIRONMENT" Value="[Users_ASPNETCORE_ENVIRONMENT]" />
     </EnvironmentOverrides>
   </ServiceManifestImport>
 </ApplicationManifest>

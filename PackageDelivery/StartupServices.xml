@@ -1,9 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<StartupServicesManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-                         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                         xmlns="http://schemas.microsoft.com/2011/01/fabric">
+<StartupServicesManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.microsoft.com/2011/01/fabric">
   <Parameters>
     <Parameter Name="ClientAPI_InstanceCount" DefaultValue="-1" />
+    <Parameter Name="CourierAPI_InstanceCount" DefaultValue="-1" />
+    <Parameter Name="AdminAPI_InstanceCount" DefaultValue="-1" />
+    <Parameter Name="Parcels_MinReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="Parcels_PartitionCount" DefaultValue="1" />
+    <Parameter Name="Parcels_TargetReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="Requests_MinReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="Requests_PartitionCount" DefaultValue="1" />
+    <Parameter Name="Requests_TargetReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="Users_MinReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="Users_PartitionCount" DefaultValue="1" />
+    <Parameter Name="Users_TargetReplicaSetSize" DefaultValue="3" />
   </Parameters>
   <Services>
     <!-- The section below creates instances of service types, when an instance of this 
@@ -15,6 +24,31 @@
       <StatelessService ServiceTypeName="ClientAPIType" InstanceCount="[ClientAPI_InstanceCount]">
         <SingletonPartition />
       </StatelessService>
+    </Service>
+    <Service Name="CourierAPI" ServicePackageActivationMode="ExclusiveProcess">
+      <StatelessService ServiceTypeName="CourierAPIType" InstanceCount="[CourierAPI_InstanceCount]">
+        <SingletonPartition />
+      </StatelessService>
+    </Service>
+    <Service Name="AdminAPI" ServicePackageActivationMode="ExclusiveProcess">
+      <StatelessService ServiceTypeName="AdminAPIType" InstanceCount="[AdminAPI_InstanceCount]">
+        <SingletonPartition />
+      </StatelessService>
+    </Service>
+    <Service Name="Parcels" ServicePackageActivationMode="ExclusiveProcess">
+      <StatefulService ServiceTypeName="ParcelsType" TargetReplicaSetSize="[Parcels_TargetReplicaSetSize]" MinReplicaSetSize="[Parcels_MinReplicaSetSize]">
+        <UniformInt64Partition PartitionCount="[Parcels_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+      </StatefulService>
+    </Service>
+    <Service Name="Requests" ServicePackageActivationMode="ExclusiveProcess">
+      <StatefulService ServiceTypeName="RequestsType" TargetReplicaSetSize="[Requests_TargetReplicaSetSize]" MinReplicaSetSize="[Requests_MinReplicaSetSize]">
+        <UniformInt64Partition PartitionCount="[Requests_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+      </StatefulService>
+    </Service>
+    <Service Name="Users" ServicePackageActivationMode="ExclusiveProcess">
+      <StatefulService ServiceTypeName="UsersType" TargetReplicaSetSize="[Users_TargetReplicaSetSize]" MinReplicaSetSize="[Users_MinReplicaSetSize]">
+        <UniformInt64Partition PartitionCount="[Users_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+      </StatefulService>
     </Service>
   </Services>
 </StartupServicesManifest>
