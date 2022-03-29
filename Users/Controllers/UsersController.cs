@@ -3,31 +3,35 @@ using Microsoft.ServiceFabric.Data;
 using Microsoft.ServiceFabric.Data.Collections;
 using System;
 using System.Collections.Generic;
+using System.Fabric;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Users.Models;
 
 namespace Users.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
-    public class UserController : Controller
+    public class UsersController : Controller
     {
         private const string usersDictName = "users";
         private static int UserIdCount = 0;
         private readonly IReliableStateManager stateManager;
+        private readonly StatefulServiceContext serviceContext;
 
-        public UserController(IReliableStateManager stateManager)
+        public UsersController(StatefulServiceContext serviceContext, IReliableStateManager stateManager)
         {
+            this.serviceContext = serviceContext;
             this.stateManager = stateManager;
         }
-        
 
-        // GET api/User
+        // GET Users
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> GetAll()
         {
+            ServiceEventSource.Current.ServiceMessage(serviceContext, $"UsersController getting all users");
 
             CancellationToken ct = new CancellationToken();
 
@@ -36,24 +40,26 @@ namespace Users.Controllers
             using (ITransaction tx = this.stateManager.CreateTransaction())
             {
                 Microsoft.ServiceFabric.Data.IAsyncEnumerable<KeyValuePair<int, User>> list = await usersDictionary.CreateEnumerableAsync(tx);
-
                 Microsoft.ServiceFabric.Data.IAsyncEnumerator<KeyValuePair<int, User>> enumerator = list.GetAsyncEnumerator();
 
-                List<KeyValuePair<int, User>> result = new List<KeyValuePair<int, User>>();
+                List<User> result = new List<User>();
 
                 while (await enumerator.MoveNextAsync(ct))
                 {
-                    result.Add(enumerator.Current);
+                    ServiceEventSource.Current.ServiceMessage(serviceContext, $"UsersController {enumerator.Current.Value.Id} {enumerator.Current.Value.Name}");
+                    result.Add(enumerator.Current.Value);
                 }
 
-                return this.Json(result);
+                return Json(result);
             }
         }
 
-        // GET api/User/{id}
-        [HttpGet("{id}")]
+        // GET Users/{Id}
+        [HttpGet("{Id}")]
         public async Task<IActionResult> Get(int Id)
         {
+            ServiceEventSource.Current.ServiceMessage(serviceContext, $"UsersController getting user: {Id}");
+
             CancellationToken ct = new CancellationToken();
             IReliableDictionary<int, User> usersDictionary = await stateManager.GetOrAddAsync<IReliableDictionary<int, User>>(usersDictName);
 
@@ -64,21 +70,26 @@ namespace Users.Controllers
 
                 while (await enumerator.MoveNextAsync(ct))
                 {
+                    ServiceEventSource.Current.ServiceMessage(serviceContext, $"UsersController while current user = {enumerator.Current.Value.Id}");
                     if (enumerator.Current.Key == Id)
                         return new JsonResult(enumerator.Current.Value);
                 }
 
-                return new NotFoundResult();
+                ServiceEventSource.Current.ServiceMessage(serviceContext, $"UsersController return NotFoundResult");
+                return NotFound();
             }
+            
         }
 
-        // POST api/User/create
+        // POST Users/create
         [HttpPost("create")]
-        public async Task<IActionResult> Create(string Name, string City)
+        public async Task<IActionResult> Create(string Name, string City, int Type)
         {
+            ServiceEventSource.Current.ServiceMessage(serviceContext, $"UsersController creating user");
+
             IReliableDictionary<int, User> usersDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<int, User>>(usersDictName);
 
-            User newUser = new User(UserIdCount, Name, City);
+            User newUser = new User { Id = UserIdCount, Name = Name, City = City, Type = (UserType) Type };
 
             using (ITransaction tx = this.stateManager.CreateTransaction())
             {
@@ -86,8 +97,7 @@ namespace Users.Controllers
                 await tx.CommitAsync();
             }
 
-            //return Json(newUser);
-            return new OkResult();
+            return Json(newUser);
         }
     }
 }

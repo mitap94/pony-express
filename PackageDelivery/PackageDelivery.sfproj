@@ -36,13 +36,7 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AdminAPI\AdminAPI.csproj">
-      <ServiceLaunchUrl>http://localhost:{ServicePort}/swagger</ServiceLaunchUrl>
-    </ProjectReference>
-    <ProjectReference Include="..\ClientAPI\ClientAPI.csproj">
-      <ServiceLaunchUrl>http://localhost:{ServicePort}/swagger</ServiceLaunchUrl>
-    </ProjectReference>
-    <ProjectReference Include="..\CourierAPI\CourierAPI.csproj">
+    <ProjectReference Include="..\ManagementAPI\ManagementAPI.csproj">
       <ServiceLaunchUrl>http://localhost:{ServicePort}/swagger</ServiceLaunchUrl>
     </ProjectReference>
     <ProjectReference Include="..\Parcels\Parcels.csproj" />

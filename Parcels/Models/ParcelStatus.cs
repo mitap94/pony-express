@@ -1,6 +1,6 @@
 ﻿namespace Parcels.Models
 {
-    internal enum ParcelStatus
+    public enum ParcelStatus
     {
         WaitingForPickup = 0,
         InTransit = 1,

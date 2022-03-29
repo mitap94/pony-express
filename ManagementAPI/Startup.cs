@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ClientAPI
+namespace ManagementAPI
 {
     public class Startup
     {
@@ -29,7 +29,7 @@ namespace ClientAPI
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "ClientAPI", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "ManagementAPI", Version = "v1" });
             });
         }
 
@@ -40,7 +40,7 @@ namespace ClientAPI
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ClientAPI v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ManagementAPI v1"));
             }
 
             app.UseRouting();

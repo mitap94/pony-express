@@ -13,14 +13,14 @@ using Microsoft.ServiceFabric.Services.Runtime;
 using Microsoft.ServiceFabric.Data;
 using System.Net.Http;
 
-namespace ClientAPI
+namespace ManagementAPI
 {
     /// <summary>
     /// The FabricRuntime creates an instance of this class for each service type instance. 
     /// </summary>
-    internal sealed class ClientAPI : StatelessService
+    internal sealed class ManagementAPI : StatelessService
     {
-        public ClientAPI(StatelessServiceContext context)
+        public ManagementAPI(StatelessServiceContext context)
             : base(context)
         { }
 
@@ -35,7 +35,7 @@ namespace ClientAPI
                 new ServiceInstanceListener(serviceContext =>
                     new KestrelCommunicationListener(serviceContext, "ServiceEndpoint", (url, listener) =>
                     {
-                        ServiceEventSource.Current.ServiceMessage(serviceContext, $"ClientAPI Starting Kestrel on {url}");
+                        ServiceEventSource.Current.ServiceMessage(serviceContext, $"ManagementAPI Starting Kestrel on {url}");
 
                         return new WebHostBuilder()
                                     .UseKestrel()

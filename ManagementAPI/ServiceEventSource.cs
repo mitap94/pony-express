@@ -7,9 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Services.Runtime;
 
-namespace ClientAPI
+namespace ManagementAPI
 {
-    [EventSource(Name = "MyCompany-PackageDelivery-ClientAPI")]
+    [EventSource(Name = "MyCompany-PackageDelivery-ManagementAPI")]
     internal sealed class ServiceEventSource : EventSource
     {
         public static readonly ServiceEventSource Current = new ServiceEventSource();

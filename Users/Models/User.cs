@@ -1,20 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 namespace Users.Models
 {
     public class User
     {
-        public User(int Id, string Name, string City)
-        {
-            this.Id = Id;
-            this.Name = Name;
-            this.City = City;
-        }
-        private int Id { get; set; }
-        private string Name { get; set; }
-        private string City { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string City { get; set; }
+        public UserType Type { get; set; }
     }
 }

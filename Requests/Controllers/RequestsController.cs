@@ -10,21 +10,21 @@ using Requests.Models;
 
 namespace Requests.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
-    public class RequestController : Controller
+    public class RequestsController : Controller
     {
         private const string RequestsDictName = "requests";
         private static int RequestIdCount = 0;
         private readonly IReliableStateManager stateManager;
 
-        public RequestController(IReliableStateManager stateManager)
+        public RequestsController(IReliableStateManager stateManager)
         {
             this.stateManager = stateManager;
         }
 
 
-        // GET api/Request
+        // GET Requests
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -50,7 +50,7 @@ namespace Requests.Controllers
             }
         }
 
-        // GET api/Request/{id}
+        // GET Requests/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int Id)
         {
@@ -72,13 +72,13 @@ namespace Requests.Controllers
             }
         }
 
-        // POST api/Request/create
+        // POST Requests/create
         [HttpPost("create")]
         public async Task<IActionResult> Create(int UserId, string Content, string FromLocation, string ToLocation, decimal Weight)
         {
             IReliableDictionary<int, Request> requestsDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<int, Request>>(RequestsDictName);
 
-            Request newRequest = new Request(RequestIdCount, UserId, Content, FromLocation, ToLocation, Weight);
+            Request newRequest = new Request { RequestId = RequestIdCount, UserId = UserId, Content = Content, FromLocation = FromLocation, ToLocation = ToLocation, Weight = Weight };
 
             using (ITransaction tx = this.stateManager.CreateTransaction())
             {
@@ -86,8 +86,7 @@ namespace Requests.Controllers
                 await tx.CommitAsync();
             }
 
-            //return Json(newRequest);
-            return new OkResult();
+            return Json(newRequest);
         }
     }
 }

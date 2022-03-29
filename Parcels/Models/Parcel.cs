@@ -7,15 +7,8 @@ namespace Parcels.Models
 {
     public class Parcel
     {
-        public Parcel(string TrackingId, int RequestId)
-        {
-            this.TrackingId = TrackingId;
-            this.RequestId = RequestId;
-            this.Status = ParcelStatus.WaitingForPickup;
-        }
-
-        private string TrackingId { get; set; }
-        private int RequestId { get; set; }
-        private ParcelStatus Status { get; set; }
+        public string TrackingId { get; set; }
+        public int RequestId { get; set; }
+        public ParcelStatus Status { get; set; }
     }
 }

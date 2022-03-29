@@ -10,21 +10,21 @@ using Parcels.Models;
 
 namespace Parcels.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
-    public class ParcelController : Controller
+    public class ParcelsController : Controller
     {
         private const string ParcelsDictName = "parcels";
         private static int ParcelIdCount = 0;
         private readonly IReliableStateManager stateManager;
 
-        public ParcelController(IReliableStateManager stateManager)
+        public ParcelsController(IReliableStateManager stateManager)
         {
             this.stateManager = stateManager;
         }
 
 
-        // GET api/Parcel
+        // GET Parcels
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -49,8 +49,8 @@ namespace Parcels.Controllers
             }
         }
 
-        // GET api/Parcel/{id}
-        [HttpGet("{id}")]
+        // GET Parcels/{Id}
+        [HttpGet("{Id}")]
         public async Task<IActionResult> Get(int Id)
         {
             CancellationToken ct = new CancellationToken();
@@ -71,14 +71,14 @@ namespace Parcels.Controllers
             }
         }
 
-        // POST api/Parcel/create
+        // POST Parcels/create
         [HttpPost("create")]
         public async Task<IActionResult> Create(int RequestId)
         {
             IReliableDictionary<int, Parcel> parcelsDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<int, Parcel>>(ParcelsDictName);
 
             string TrackingId = "PE" + ParcelIdCount;
-            Parcel newParcel = new Parcel(TrackingId, RequestId);
+            Parcel newParcel = new Parcel { TrackingId = TrackingId, RequestId = RequestId, Status = ParcelStatus.WaitingForPickup };
 
             using (ITransaction tx = this.stateManager.CreateTransaction())
             {
@@ -86,8 +86,7 @@ namespace Parcels.Controllers
                 await tx.CommitAsync();
             }
 
-            //return Json(newParcel);
-            return new OkResult();
+            return Json(newParcel);
         }
     }
 }

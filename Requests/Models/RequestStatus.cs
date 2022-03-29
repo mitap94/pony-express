@@ -1,6 +1,6 @@
 ﻿namespace Requests.Models
 {
-    internal enum RequestStatus
+    public enum RequestStatus
     {
         NotHandled = 0,
         Denied = 1,
