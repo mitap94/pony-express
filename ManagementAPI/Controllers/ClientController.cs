@@ -20,11 +20,11 @@ namespace ManagementAPI.Controllers
         private readonly FabricClient fabricClient;
         private readonly StatelessServiceContext serviceContext;
 
-        public ClientController(HttpClient httpClient, StatelessServiceContext context, FabricClient fabricClient)
+        public ClientController(HttpClient httpClient, StatelessServiceContext serviceContext, FabricClient fabricClient)
         {
             this.fabricClient = fabricClient;
             this.httpClient = httpClient;
-            this.serviceContext = context;
+            this.serviceContext = serviceContext;
         }
 
         // GET api/users
@@ -42,7 +42,7 @@ namespace ManagementAPI.Controllers
             foreach (Partition partition in partitions)
             {
                 string proxyUrl =
-                    $"{proxyAddress}/Users?PartitionKey={((Int64RangePartitionInformation)partition.PartitionInformation).LowKey}&PartitionKind=Int64Range";
+                    $"{proxyAddress}/InternalUsers?PartitionKey={((Int64RangePartitionInformation)partition.PartitionInformation).LowKey}&PartitionKind=Int64Range";
 
                 ServiceEventSource.Current.ServiceMessage(serviceContext, $"ClientController get all addresses {proxyUrl}");
 
@@ -62,8 +62,8 @@ namespace ManagementAPI.Controllers
             return this.Json(result);
         }
 
-        // GET api/users/{Id}
-        [HttpGet("{Id}")]
+        // GET api/users/{id}
+        [HttpGet("{id}")]
         public async Task<IActionResult> Get(int Id)
         {
             // Calling Users 
@@ -74,7 +74,7 @@ namespace ManagementAPI.Controllers
 
             //{((Int64RangePartitionInformation)partition.PartitionInformation).LowKey}
             string proxyUrl =
-                $"{proxyAddress}/Users/{Id}?PartitionKey=0&PartitionKind=Int64Range";
+                $"{proxyAddress}/InternalUsers/{Id}?PartitionKey=0&PartitionKind=Int64Range";
 
             ServiceEventSource.Current.ServiceMessage(serviceContext, $"ClientController get address {proxyUrl}");
 
@@ -109,7 +109,7 @@ namespace ManagementAPI.Controllers
             Uri proxyAddress = Utils.GetProxyAddress(serviceName);
 
             string proxyUrl =
-                $"{proxyAddress}/Users/create?Name={Name}&City={City}&Type={Type}&PartitionKey=0&PartitionKind=Int64Range";
+                $"{proxyAddress}/InternalUsers/create?Name={Name}&City={City}&Type={Type}&PartitionKey={Utils.GetUsersPartitionKey()}&PartitionKind=Int64Range";
 
             ServiceEventSource.Current.ServiceMessage(serviceContext, $"ClientController create address {proxyUrl}");
 

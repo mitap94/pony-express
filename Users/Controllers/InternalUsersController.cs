@@ -12,16 +12,17 @@ using Users.Models;
 
 namespace Users.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     [Route("[controller]")]
     [ApiController]
-    public class UsersController : Controller
+    public class InternalUsersController : Controller
     {
         private const string usersDictName = "users";
         private static int UserIdCount = 0;
         private readonly IReliableStateManager stateManager;
         private readonly StatefulServiceContext serviceContext;
 
-        public UsersController(StatefulServiceContext serviceContext, IReliableStateManager stateManager)
+        public InternalUsersController(StatefulServiceContext serviceContext, IReliableStateManager stateManager)
         {
             this.serviceContext = serviceContext;
             this.stateManager = stateManager;
@@ -31,7 +32,7 @@ namespace Users.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            ServiceEventSource.Current.ServiceMessage(serviceContext, $"UsersController getting all users");
+            ServiceEventSource.Current.ServiceMessage(serviceContext, $"InternalUsersController getting all users");
 
             CancellationToken ct = new CancellationToken();
 
@@ -46,7 +47,7 @@ namespace Users.Controllers
 
                 while (await enumerator.MoveNextAsync(ct))
                 {
-                    ServiceEventSource.Current.ServiceMessage(serviceContext, $"UsersController {enumerator.Current.Value.Id} {enumerator.Current.Value.Name}");
+                    ServiceEventSource.Current.ServiceMessage(serviceContext, $"InternalUsersController {enumerator.Current.Value.Id} {enumerator.Current.Value.Name}");
                     result.Add(enumerator.Current.Value);
                 }
 
@@ -54,11 +55,11 @@ namespace Users.Controllers
             }
         }
 
-        // GET Users/{Id}
-        [HttpGet("{Id}")]
+        // GET Users/{id}
+        [HttpGet("{id}")]
         public async Task<IActionResult> Get(int Id)
         {
-            ServiceEventSource.Current.ServiceMessage(serviceContext, $"UsersController getting user: {Id}");
+            ServiceEventSource.Current.ServiceMessage(serviceContext, $"InternalUsersController getting user: {Id}");
 
             CancellationToken ct = new CancellationToken();
             IReliableDictionary<int, User> usersDictionary = await stateManager.GetOrAddAsync<IReliableDictionary<int, User>>(usersDictName);
@@ -70,12 +71,12 @@ namespace Users.Controllers
 
                 while (await enumerator.MoveNextAsync(ct))
                 {
-                    ServiceEventSource.Current.ServiceMessage(serviceContext, $"UsersController while current user = {enumerator.Current.Value.Id}");
+                    ServiceEventSource.Current.ServiceMessage(serviceContext, $"InternalUsersController while current user = {enumerator.Current.Value.Id}");
                     if (enumerator.Current.Key == Id)
                         return new JsonResult(enumerator.Current.Value);
                 }
 
-                ServiceEventSource.Current.ServiceMessage(serviceContext, $"UsersController return NotFoundResult");
+                ServiceEventSource.Current.ServiceMessage(serviceContext, $"InternalUsersController return NotFoundResult");
                 return NotFound();
             }
             
@@ -85,7 +86,7 @@ namespace Users.Controllers
         [HttpPost("create")]
         public async Task<IActionResult> Create(string Name, string City, int Type)
         {
-            ServiceEventSource.Current.ServiceMessage(serviceContext, $"UsersController creating user");
+            ServiceEventSource.Current.ServiceMessage(serviceContext, $"InternalUsersController creating user");
 
             IReliableDictionary<int, User> usersDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<int, User>>(usersDictName);
 

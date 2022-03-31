@@ -10,19 +10,18 @@ using Parcels.Models;
 
 namespace Parcels.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     [Route("[controller]")]
     [ApiController]
-    public class ParcelsController : Controller
+    public class InternalParcelsController : Controller
     {
         private const string ParcelsDictName = "parcels";
-        private static int ParcelIdCount = 0;
         private readonly IReliableStateManager stateManager;
 
-        public ParcelsController(IReliableStateManager stateManager)
+        public InternalParcelsController(IReliableStateManager stateManager)
         {
             this.stateManager = stateManager;
         }
-
 
         // GET Parcels
         [HttpGet]
@@ -38,19 +37,19 @@ namespace Parcels.Controllers
 
                 Microsoft.ServiceFabric.Data.IAsyncEnumerator<KeyValuePair<int, Parcel>> enumerator = list.GetAsyncEnumerator();
 
-                List<KeyValuePair<int, Parcel>> result = new List<KeyValuePair<int, Parcel>>();
+                List<Parcel> result = new List<Parcel>();
 
                 while (await enumerator.MoveNextAsync(ct))
                 {
-                    result.Add(enumerator.Current);
+                    result.Add(enumerator.Current.Value);
                 }
 
                 return this.Json(result);
             }
         }
 
-        // GET Parcels/{Id}
-        [HttpGet("{Id}")]
+        // GET Parcels/{id}
+        [HttpGet("{id}")]
         public async Task<IActionResult> Get(int Id)
         {
             CancellationToken ct = new CancellationToken();
@@ -77,16 +76,42 @@ namespace Parcels.Controllers
         {
             IReliableDictionary<int, Parcel> parcelsDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<int, Parcel>>(ParcelsDictName);
 
-            string TrackingId = "PE" + ParcelIdCount;
-            Parcel newParcel = new Parcel { TrackingId = TrackingId, RequestId = RequestId, Status = ParcelStatus.WaitingForPickup };
+            Parcel newParcel = new Parcel { RequestId = RequestId, Status = ParcelStatus.WaitingForPickup };
 
             using (ITransaction tx = this.stateManager.CreateTransaction())
             {
-                await parcelsDictionary.AddAsync(tx, ParcelIdCount++, newParcel);
+                await parcelsDictionary.AddAsync(tx, RequestId, newParcel);
                 await tx.CommitAsync();
             }
 
             return Json(newParcel);
+        }
+
+        // PATCH InternalParcels/{id}
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> ChangeStatus(int id, int Status)
+        {
+            CancellationToken ct = new CancellationToken();
+            IReliableDictionary<int, Parcel> parcelsDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<int, Parcel>>(ParcelsDictName);
+
+            using (ITransaction tx = stateManager.CreateTransaction())
+            {
+                Microsoft.ServiceFabric.Data.IAsyncEnumerable<KeyValuePair<int, Parcel>> list = await parcelsDictionary.CreateEnumerableAsync(tx);
+                Microsoft.ServiceFabric.Data.IAsyncEnumerator<KeyValuePair<int, Parcel>> enumerator = list.GetAsyncEnumerator();
+
+                while (await enumerator.MoveNextAsync(ct))
+                {
+                    if (enumerator.Current.Key == id)
+                    {
+                        enumerator.Current.Value.Status = (ParcelStatus)Status;
+                        await parcelsDictionary.AddOrUpdateAsync(tx, id, enumerator.Current.Value, (key, oldvalue) => enumerator.Current.Value);
+
+                        return Json(enumerator.Current.Value);
+                    }
+                }
+
+                return new NotFoundResult();
+            }
         }
     }
 }

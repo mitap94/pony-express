@@ -7,7 +7,6 @@ namespace Parcels.Models
 {
     public class Parcel
     {
-        public string TrackingId { get; set; }
         public int RequestId { get; set; }
         public ParcelStatus Status { get; set; }
     }

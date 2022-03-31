@@ -19,6 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj" />
     <ProjectReference Include="..\Parcels\Parcels.csproj" />
+    <ProjectReference Include="..\Requests\Requests.csproj" />
     <ProjectReference Include="..\Users\Users.csproj" />
   </ItemGroup>
 

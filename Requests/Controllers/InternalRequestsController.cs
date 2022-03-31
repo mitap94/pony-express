@@ -10,21 +10,22 @@ using Requests.Models;
 
 namespace Requests.Controllers
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     [Route("[controller]")]
     [ApiController]
-    public class RequestsController : Controller
+    public class InternalRequestsController : Controller
     {
         private const string RequestsDictName = "requests";
         private static int RequestIdCount = 0;
         private readonly IReliableStateManager stateManager;
 
-        public RequestsController(IReliableStateManager stateManager)
+        public InternalRequestsController(IReliableStateManager stateManager)
         {
             this.stateManager = stateManager;
         }
 
 
-        // GET Requests
+        // GET InternalRequests
         [HttpGet]
         public async Task<IActionResult> Get()
         {
@@ -39,18 +40,18 @@ namespace Requests.Controllers
 
                 Microsoft.ServiceFabric.Data.IAsyncEnumerator<KeyValuePair<int, Request>> enumerator = list.GetAsyncEnumerator();
 
-                List<KeyValuePair<int, Request>> result = new List<KeyValuePair<int, Request>>();
+                List<Request> result = new List<Request>();
 
                 while (await enumerator.MoveNextAsync(ct))
                 {
-                    result.Add(enumerator.Current);
+                    result.Add(enumerator.Current.Value);
                 }
 
                 return this.Json(result);
             }
         }
 
-        // GET Requests/{id}
+        // GET InternalRequests/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int Id)
         {
@@ -72,13 +73,13 @@ namespace Requests.Controllers
             }
         }
 
-        // POST Requests/create
+        // POST InternalRequests/create
         [HttpPost("create")]
         public async Task<IActionResult> Create(int UserId, string Content, string FromLocation, string ToLocation, decimal Weight)
         {
             IReliableDictionary<int, Request> requestsDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<int, Request>>(RequestsDictName);
 
-            Request newRequest = new Request { RequestId = RequestIdCount, UserId = UserId, Content = Content, FromLocation = FromLocation, ToLocation = ToLocation, Weight = Weight };
+            Request newRequest = new Request { RequestId = RequestIdCount, UserId = UserId, Content = Content, FromLocation = FromLocation, ToLocation = ToLocation, Weight = Weight, Status = RequestStatus.NotHandled };
 
             using (ITransaction tx = this.stateManager.CreateTransaction())
             {
@@ -87,6 +88,32 @@ namespace Requests.Controllers
             }
 
             return Json(newRequest);
+        }
+
+        // PATCH InternalRequests/{id}
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> ChangeStatus(int id, int Status)
+        {
+            CancellationToken ct = new CancellationToken();
+            IReliableDictionary<int, Request> requestsDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<int, Request>>(RequestsDictName);
+
+            using (ITransaction tx = stateManager.CreateTransaction())
+            {
+                Microsoft.ServiceFabric.Data.IAsyncEnumerable<KeyValuePair<int, Request>> list = await requestsDictionary.CreateEnumerableAsync(tx);
+                Microsoft.ServiceFabric.Data.IAsyncEnumerator<KeyValuePair<int, Request>> enumerator = list.GetAsyncEnumerator();
+
+                while (await enumerator.MoveNextAsync(ct))
+                {
+                    if (enumerator.Current.Key == id) {
+                        enumerator.Current.Value.Status = (RequestStatus) Status;
+                        await requestsDictionary.AddOrUpdateAsync(tx, id, enumerator.Current.Value, (key, oldvalue) => enumerator.Current.Value);
+
+                        return Json(enumerator.Current.Value);
+                    }
+                }
+
+                return new NotFoundResult();
+            }
         }
     }
 }

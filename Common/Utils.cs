@@ -28,17 +28,17 @@ namespace Common
         }
 
         // TODO: create partitioning scheme
-        private long GetUsersPartitionKey(string name)
+        public static long GetUsersPartitionKey()
         {
             return 0;
         }
 
-        private long GetRequestsPartitionKey(string name)
+        public static long GetRequestsPartitionKey()
         {
             return 0;
         }
 
-        private long GetParcelsPartitionKey(string name)
+        public static long GetParcelsPartitionKey()
         {
             return 0;
         }
