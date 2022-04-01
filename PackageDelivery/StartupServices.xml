@@ -3,13 +3,13 @@
   <Parameters>
     <Parameter Name="ManagementAPI_InstanceCount" DefaultValue="-1" />
     <Parameter Name="Parcels_MinReplicaSetSize" DefaultValue="3" />
-    <Parameter Name="Parcels_PartitionCount" DefaultValue="1" />
+    <Parameter Name="Parcels_PartitionCount" DefaultValue="4" />
     <Parameter Name="Parcels_TargetReplicaSetSize" DefaultValue="3" />
     <Parameter Name="Requests_MinReplicaSetSize" DefaultValue="3" />
-    <Parameter Name="Requests_PartitionCount" DefaultValue="1" />
+    <Parameter Name="Requests_PartitionCount" DefaultValue="4" />
     <Parameter Name="Requests_TargetReplicaSetSize" DefaultValue="3" />
     <Parameter Name="Users_MinReplicaSetSize" DefaultValue="3" />
-    <Parameter Name="Users_PartitionCount" DefaultValue="1" />
+    <Parameter Name="Users_PartitionCount" DefaultValue="2" />
     <Parameter Name="Users_TargetReplicaSetSize" DefaultValue="3" />
   </Parameters>
   <Services>
@@ -25,17 +25,17 @@
     </Service>
     <Service Name="Parcels" ServicePackageActivationMode="ExclusiveProcess">
       <StatefulService ServiceTypeName="ParcelsType" TargetReplicaSetSize="[Parcels_TargetReplicaSetSize]" MinReplicaSetSize="[Parcels_MinReplicaSetSize]">
-        <UniformInt64Partition PartitionCount="[Parcels_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+        <UniformInt64Partition PartitionCount="[Parcels_PartitionCount]" LowKey="0" HighKey="3" />
       </StatefulService>
     </Service>
     <Service Name="Requests" ServicePackageActivationMode="ExclusiveProcess">
       <StatefulService ServiceTypeName="RequestsType" TargetReplicaSetSize="[Requests_TargetReplicaSetSize]" MinReplicaSetSize="[Requests_MinReplicaSetSize]">
-        <UniformInt64Partition PartitionCount="[Requests_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+        <UniformInt64Partition PartitionCount="[Requests_PartitionCount]" LowKey="0" HighKey="3" />
       </StatefulService>
     </Service>
     <Service Name="Users" ServicePackageActivationMode="ExclusiveProcess">
       <StatefulService ServiceTypeName="UsersType" TargetReplicaSetSize="[Users_TargetReplicaSetSize]" MinReplicaSetSize="[Users_MinReplicaSetSize]">
-        <UniformInt64Partition PartitionCount="[Users_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+        <UniformInt64Partition PartitionCount="[Users_PartitionCount]" LowKey="0" HighKey="1" />
       </StatefulService>
     </Service>
   </Services>

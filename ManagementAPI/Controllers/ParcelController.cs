@@ -30,7 +30,7 @@ namespace ManagementAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            // Calling Parcels 
+            // Calling InternalParcels 
             Uri serviceName = Utils.GetParcelsServiceName(this.serviceContext);
             Uri proxyAddress = Utils.GetProxyAddress(serviceName);
 
@@ -63,17 +63,16 @@ namespace ManagementAPI.Controllers
 
         // GET api/parcels/{id}
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int Id)
+        public async Task<IActionResult> Get(string Id)
         {
-            // Calling Parcels 
+            // Calling InternalParcels 
             Uri serviceName = Utils.GetParcelsServiceName(this.serviceContext);
             Uri proxyAddress = Utils.GetProxyAddress(serviceName);
 
             ServicePartitionList partitions = await this.fabricClient.QueryManager.GetPartitionListAsync(serviceName);
 
-            //{((Int64RangePartitionInformation)partition.PartitionInformation).LowKey}
             string proxyUrl =
-                $"{proxyAddress}/InternalParcels/{Id}?PartitionKey={Utils.GetParcelsPartitionKey()}&PartitionKind=Int64Range";
+                $"{proxyAddress}/InternalParcels/{Id}?PartitionKey={Utils.GetParcelsPartitionKeyFromId(Id)}&PartitionKind=Int64Range";
 
             ServiceEventSource.Current.ServiceMessage(serviceContext, $"ParcelController get address {proxyUrl}");
 
@@ -102,14 +101,14 @@ namespace ManagementAPI.Controllers
 
         // POST api/parcels/create
         [HttpPost("create")]
-        public async Task<IActionResult> Create(int RequestId)
+        public async Task<IActionResult> Create(string RequestId)
         {
-            // Calling Parcels
+            // Calling InternalParcels
             Uri serviceName = Utils.GetParcelsServiceName(this.serviceContext);
             Uri proxyAddress = Utils.GetProxyAddress(serviceName);
 
             string proxyUrl =
-                $"{proxyAddress}/InternalParcels/create?RequestId={RequestId}&PartitionKey={Utils.GetParcelsPartitionKey()}&PartitionKind=Int64Range";
+                $"{proxyAddress}/InternalParcels/create?RequestId={RequestId}&PartitionKey={Utils.GetParcelsPartitionKeyFromId(RequestId)}&PartitionKind=Int64Range";
 
             ServiceEventSource.Current.ServiceMessage(serviceContext, $"ParcelController create address {proxyUrl}");
 
@@ -126,15 +125,15 @@ namespace ManagementAPI.Controllers
 
         // PATCH api/parcels/{id}
         [HttpPatch("{id}")]
-        public async Task<IActionResult> ChangeStatus(int id, int Status)
+        public async Task<IActionResult> ChangeStatus(string id, int Status)
         {
-            // Calling Parcels
+            // Calling InternalParcels
             Uri serviceName = Utils.GetParcelsServiceName(this.serviceContext);
             Uri proxyAddress = Utils.GetProxyAddress(serviceName);
 
             string proxyUrl =
                 $"{proxyAddress}/InternalParcels/{id}?Status={Status}" +
-                $"&PartitionKey={Utils.GetParcelsPartitionKey()}&PartitionKind=Int64Range";
+                $"&PartitionKey={Utils.GetParcelsPartitionKeyFromId(id)}&PartitionKind=Int64Range";
 
             ServiceEventSource.Current.ServiceMessage(serviceContext, $"ParcelController create address {proxyUrl}");
 

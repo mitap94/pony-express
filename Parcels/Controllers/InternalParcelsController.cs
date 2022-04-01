@@ -29,13 +29,13 @@ namespace Parcels.Controllers
         {
             CancellationToken ct = new CancellationToken();
 
-            IReliableDictionary<int, Parcel> parcelsDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<int, Parcel>>(ParcelsDictName);
+            IReliableDictionary<string, Parcel> parcelsDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, Parcel>>(ParcelsDictName);
 
             using (ITransaction tx = this.stateManager.CreateTransaction())
             {
-                Microsoft.ServiceFabric.Data.IAsyncEnumerable<KeyValuePair<int, Parcel>> list = await parcelsDictionary.CreateEnumerableAsync(tx);
+                Microsoft.ServiceFabric.Data.IAsyncEnumerable<KeyValuePair<string, Parcel>> list = await parcelsDictionary.CreateEnumerableAsync(tx);
 
-                Microsoft.ServiceFabric.Data.IAsyncEnumerator<KeyValuePair<int, Parcel>> enumerator = list.GetAsyncEnumerator();
+                Microsoft.ServiceFabric.Data.IAsyncEnumerator<KeyValuePair<string, Parcel>> enumerator = list.GetAsyncEnumerator();
 
                 List<Parcel> result = new List<Parcel>();
 
@@ -50,19 +50,19 @@ namespace Parcels.Controllers
 
         // GET Parcels/{id}
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int Id)
+        public async Task<IActionResult> Get(string id)
         {
             CancellationToken ct = new CancellationToken();
-            IReliableDictionary<int, Parcel> parcelsDictionary = await stateManager.GetOrAddAsync<IReliableDictionary<int, Parcel>>(ParcelsDictName);
+            IReliableDictionary<string, Parcel> parcelsDictionary = await stateManager.GetOrAddAsync<IReliableDictionary<string, Parcel>>(ParcelsDictName);
 
             using (ITransaction tx = stateManager.CreateTransaction())
             {
-                Microsoft.ServiceFabric.Data.IAsyncEnumerable<KeyValuePair<int, Parcel>> list = await parcelsDictionary.CreateEnumerableAsync(tx);
-                Microsoft.ServiceFabric.Data.IAsyncEnumerator<KeyValuePair<int, Parcel>> enumerator = list.GetAsyncEnumerator();
+                Microsoft.ServiceFabric.Data.IAsyncEnumerable<KeyValuePair<string, Parcel>> list = await parcelsDictionary.CreateEnumerableAsync(tx);
+                Microsoft.ServiceFabric.Data.IAsyncEnumerator<KeyValuePair<string, Parcel>> enumerator = list.GetAsyncEnumerator();
 
                 while (await enumerator.MoveNextAsync(ct))
                 {
-                    if (enumerator.Current.Key == Id)
+                    if (enumerator.Current.Key == id)
                         return new JsonResult(enumerator.Current.Value);
                 }
 
@@ -72,9 +72,9 @@ namespace Parcels.Controllers
 
         // POST Parcels/create
         [HttpPost("create")]
-        public async Task<IActionResult> Create(int RequestId)
+        public async Task<IActionResult> Create(string RequestId)
         {
-            IReliableDictionary<int, Parcel> parcelsDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<int, Parcel>>(ParcelsDictName);
+            IReliableDictionary<string, Parcel> parcelsDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, Parcel>>(ParcelsDictName);
 
             Parcel newParcel = new Parcel { RequestId = RequestId, Status = ParcelStatus.WaitingForPickup };
 
@@ -89,15 +89,15 @@ namespace Parcels.Controllers
 
         // PATCH InternalParcels/{id}
         [HttpPatch("{id}")]
-        public async Task<IActionResult> ChangeStatus(int id, int Status)
+        public async Task<IActionResult> ChangeStatus(string id, int Status)
         {
             CancellationToken ct = new CancellationToken();
-            IReliableDictionary<int, Parcel> parcelsDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<int, Parcel>>(ParcelsDictName);
+            IReliableDictionary<string, Parcel> parcelsDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, Parcel>>(ParcelsDictName);
 
             using (ITransaction tx = stateManager.CreateTransaction())
             {
-                Microsoft.ServiceFabric.Data.IAsyncEnumerable<KeyValuePair<int, Parcel>> list = await parcelsDictionary.CreateEnumerableAsync(tx);
-                Microsoft.ServiceFabric.Data.IAsyncEnumerator<KeyValuePair<int, Parcel>> enumerator = list.GetAsyncEnumerator();
+                Microsoft.ServiceFabric.Data.IAsyncEnumerable<KeyValuePair<string, Parcel>> list = await parcelsDictionary.CreateEnumerableAsync(tx);
+                Microsoft.ServiceFabric.Data.IAsyncEnumerator<KeyValuePair<string, Parcel>> enumerator = list.GetAsyncEnumerator();
 
                 while (await enumerator.MoveNextAsync(ct))
                 {

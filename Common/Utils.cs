@@ -12,6 +12,11 @@ namespace Common
             return new Uri($"http://localhost:19081{serviceName.AbsolutePath}");
         }
 
+        public static Uri GetManagementAPIServiceName(ServiceContext context)
+        {
+            return new Uri($"{context.CodePackageActivationContext.ApplicationName}/ManagementAPI");
+        }
+
         public static Uri GetUsersServiceName(ServiceContext context)
         {
             return new Uri($"{context.CodePackageActivationContext.ApplicationName}/Users");
@@ -27,20 +32,40 @@ namespace Common
             return new Uri($"{context.CodePackageActivationContext.ApplicationName}/Parcels");
         }
 
-        // TODO: create partitioning scheme
-        public static long GetUsersPartitionKey()
+        public static long GetUsersPartitionKeyFromId(string id)
         {
-            return 0;
+            int partitionEntrance = Char.ToUpper(id[1]) - 'A';
+            return partitionEntrance % 2;
         }
 
-        public static long GetRequestsPartitionKey()
+        public static long GetUsersPartitionKeyFromCity(string city)
         {
-            return 0;
+            int partitionEntrance = Char.ToUpper(city[0]) - 'A';
+            return partitionEntrance % 2;
         }
 
-        public static long GetParcelsPartitionKey()
+        public static long GetRequestsPartitionKeyFromId(string id)
         {
-            return 0;
+            int partitionEntrance = Char.ToUpper(id[1]) - 'A';
+            return partitionEntrance % 4;
+        }
+
+        public static long GetRequestsPartitionKeyFromCity(string FromCity)
+        {
+            int partitionEntrance = Char.ToUpper(FromCity[0]) - 'A';
+            return partitionEntrance % 4;
+        }
+
+        public static long GetParcelsPartitionKeyFromId(string id)
+        {
+            int partitionEntrance = Char.ToUpper(id[1]) - 'A';
+            return partitionEntrance % 4;
+        }
+
+        public static long GetParcelsPartitionKeyFromCity(string FromCity)
+        {
+            int partitionEntrance = Char.ToUpper(FromCity[0]) - 'A';
+            return partitionEntrance % 4;
         }
     }
 }

@@ -36,12 +36,12 @@ namespace Users.Controllers
 
             CancellationToken ct = new CancellationToken();
 
-            IReliableDictionary<int, User> usersDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<int, User>>(usersDictName);
+            IReliableDictionary<string, User> usersDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, User>>(usersDictName);
 
             using (ITransaction tx = this.stateManager.CreateTransaction())
             {
-                Microsoft.ServiceFabric.Data.IAsyncEnumerable<KeyValuePair<int, User>> list = await usersDictionary.CreateEnumerableAsync(tx);
-                Microsoft.ServiceFabric.Data.IAsyncEnumerator<KeyValuePair<int, User>> enumerator = list.GetAsyncEnumerator();
+                Microsoft.ServiceFabric.Data.IAsyncEnumerable<KeyValuePair<string, User>> list = await usersDictionary.CreateEnumerableAsync(tx);
+                Microsoft.ServiceFabric.Data.IAsyncEnumerator<KeyValuePair<string, User>> enumerator = list.GetAsyncEnumerator();
 
                 List<User> result = new List<User>();
 
@@ -57,17 +57,17 @@ namespace Users.Controllers
 
         // GET Users/{id}
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int Id)
+        public async Task<IActionResult> Get(string Id)
         {
             ServiceEventSource.Current.ServiceMessage(serviceContext, $"InternalUsersController getting user: {Id}");
 
             CancellationToken ct = new CancellationToken();
-            IReliableDictionary<int, User> usersDictionary = await stateManager.GetOrAddAsync<IReliableDictionary<int, User>>(usersDictName);
+            IReliableDictionary<string, User> usersDictionary = await stateManager.GetOrAddAsync<IReliableDictionary<string, User>>(usersDictName);
 
             using (ITransaction tx = stateManager.CreateTransaction())
             {
-                Microsoft.ServiceFabric.Data.IAsyncEnumerable<KeyValuePair<int, User>> list = await usersDictionary.CreateEnumerableAsync(tx);
-                Microsoft.ServiceFabric.Data.IAsyncEnumerator<KeyValuePair<int, User>> enumerator = list.GetAsyncEnumerator();
+                Microsoft.ServiceFabric.Data.IAsyncEnumerable<KeyValuePair<string, User>> list = await usersDictionary.CreateEnumerableAsync(tx);
+                Microsoft.ServiceFabric.Data.IAsyncEnumerator<KeyValuePair<string, User>> enumerator = list.GetAsyncEnumerator();
 
                 while (await enumerator.MoveNextAsync(ct))
                 {
@@ -88,13 +88,15 @@ namespace Users.Controllers
         {
             ServiceEventSource.Current.ServiceMessage(serviceContext, $"InternalUsersController creating user");
 
-            IReliableDictionary<int, User> usersDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<int, User>>(usersDictName);
+            IReliableDictionary<string, User> usersDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, User>>(usersDictName);
 
-            User newUser = new User { Id = UserIdCount, Name = Name, City = City, Type = (UserType) Type };
+            string newId = "U" + City[0] + UserIdCount++;
+
+            User newUser = new User { Id = newId, Name = Name, City = City, Type = (UserType) Type };
 
             using (ITransaction tx = this.stateManager.CreateTransaction())
             {
-                await usersDictionary.AddAsync(tx, UserIdCount++, newUser);
+                await usersDictionary.AddAsync(tx, newId, newUser);
                 await tx.CommitAsync();
             }
 

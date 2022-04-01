@@ -30,7 +30,7 @@ namespace ManagementAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            // Calling Requests 
+            // Calling InternalRequests 
             Uri serviceName = Utils.GetRequestsServiceName(this.serviceContext);
             Uri proxyAddress = Utils.GetProxyAddress(serviceName);
 
@@ -63,16 +63,16 @@ namespace ManagementAPI.Controllers
 
         // GET api/requests/{id}
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int Id)
+        public async Task<IActionResult> Get(string Id)
         {
-            // Calling Requests 
+            // Calling InternalRequests 
             Uri serviceName = Utils.GetRequestsServiceName(this.serviceContext);
             Uri proxyAddress = Utils.GetProxyAddress(serviceName);
 
             ServicePartitionList partitions = await this.fabricClient.QueryManager.GetPartitionListAsync(serviceName);
 
             string proxyUrl =
-                $"{proxyAddress}/InternalRequests/{Id}?PartitionKey={Utils.GetRequestsPartitionKey()}&PartitionKind=Int64Range";
+                $"{proxyAddress}/InternalRequests/{Id}?PartitionKey={Utils.GetRequestsPartitionKeyFromId(Id)}&PartitionKind=Int64Range";
 
             ServiceEventSource.Current.ServiceMessage(serviceContext, $"RequestController get address {proxyUrl}");
 
@@ -101,15 +101,15 @@ namespace ManagementAPI.Controllers
 
         // POST api/requests/create
         [HttpPost("create")]
-        public async Task<IActionResult> Create(int UserId, string Content, string FromLocation, string ToLocation, decimal Weight)
+        public async Task<IActionResult> Create(string UserId, string Content, string FromLocation, string ToLocation, decimal Weight)
         {
-            // Calling Requests
+            // Calling InternalRequests
             Uri serviceName = Utils.GetRequestsServiceName(this.serviceContext);
             Uri proxyAddress = Utils.GetProxyAddress(serviceName);
 
             string proxyUrl =
                 $"{proxyAddress}/InternalRequests/create?UserId={UserId}&Content={Content}&FromLocation={FromLocation}&ToLocation={ToLocation}&Weight={Weight}" +
-                $"&PartitionKey={Utils.GetRequestsPartitionKey()}&PartitionKind=Int64Range";
+                $"&PartitionKey={Utils.GetRequestsPartitionKeyFromCity(FromLocation)}&PartitionKind=Int64Range";
 
             ServiceEventSource.Current.ServiceMessage(serviceContext, $"RequestController create address {proxyUrl}");
 
@@ -126,15 +126,15 @@ namespace ManagementAPI.Controllers
 
         // PATCH api/requests/{id}
         [HttpPatch("{id}")]
-        public async Task<IActionResult> ChangeStatus(int id, int Status)
+        public async Task<IActionResult> ChangeStatus(string id, int Status)
         {
-            // Calling Requests
+            // Calling InternalRequests
             Uri serviceName = Utils.GetRequestsServiceName(this.serviceContext);
             Uri proxyAddress = Utils.GetProxyAddress(serviceName);
 
             string proxyUrl =
                 $"{proxyAddress}/InternalRequests/{id}?Status={Status}" +
-                $"&PartitionKey={Utils.GetRequestsPartitionKey()}&PartitionKind=Int64Range";
+                $"&PartitionKey={Utils.GetRequestsPartitionKeyFromId(id)}&PartitionKind=Int64Range";
 
             ServiceEventSource.Current.ServiceMessage(serviceContext, $"RequestController create address {proxyUrl}");
 

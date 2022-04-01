@@ -24,7 +24,6 @@ namespace Requests.Controllers
             this.stateManager = stateManager;
         }
 
-
         // GET InternalRequests
         [HttpGet]
         public async Task<IActionResult> Get()
@@ -32,13 +31,13 @@ namespace Requests.Controllers
 
             CancellationToken ct = new CancellationToken();
 
-            IReliableDictionary<int, Request> requestsDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<int, Request>>(RequestsDictName);
+            IReliableDictionary<string, Request> requestsDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, Request>>(RequestsDictName);
 
             using (ITransaction tx = this.stateManager.CreateTransaction())
             {
-                Microsoft.ServiceFabric.Data.IAsyncEnumerable<KeyValuePair<int, Request>> list = await requestsDictionary.CreateEnumerableAsync(tx);
+                Microsoft.ServiceFabric.Data.IAsyncEnumerable<KeyValuePair<string, Request>> list = await requestsDictionary.CreateEnumerableAsync(tx);
 
-                Microsoft.ServiceFabric.Data.IAsyncEnumerator<KeyValuePair<int, Request>> enumerator = list.GetAsyncEnumerator();
+                Microsoft.ServiceFabric.Data.IAsyncEnumerator<KeyValuePair<string, Request>> enumerator = list.GetAsyncEnumerator();
 
                 List<Request> result = new List<Request>();
 
@@ -53,15 +52,15 @@ namespace Requests.Controllers
 
         // GET InternalRequests/{id}
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int Id)
+        public async Task<IActionResult> Get(string Id)
         {
             CancellationToken ct = new CancellationToken();
-            IReliableDictionary<int, Request> requestsDictionary = await stateManager.GetOrAddAsync<IReliableDictionary<int, Request>>(RequestsDictName);
+            IReliableDictionary<string, Request> requestsDictionary = await stateManager.GetOrAddAsync<IReliableDictionary<string, Request>>(RequestsDictName);
 
             using (ITransaction tx = stateManager.CreateTransaction())
             {
-                Microsoft.ServiceFabric.Data.IAsyncEnumerable<KeyValuePair<int, Request>> list = await requestsDictionary.CreateEnumerableAsync(tx);
-                Microsoft.ServiceFabric.Data.IAsyncEnumerator<KeyValuePair<int, Request>> enumerator = list.GetAsyncEnumerator();
+                Microsoft.ServiceFabric.Data.IAsyncEnumerable<KeyValuePair<string, Request>> list = await requestsDictionary.CreateEnumerableAsync(tx);
+                Microsoft.ServiceFabric.Data.IAsyncEnumerator<KeyValuePair<string, Request>> enumerator = list.GetAsyncEnumerator();
 
                 while (await enumerator.MoveNextAsync(ct))
                 {
@@ -75,15 +74,17 @@ namespace Requests.Controllers
 
         // POST InternalRequests/create
         [HttpPost("create")]
-        public async Task<IActionResult> Create(int UserId, string Content, string FromLocation, string ToLocation, decimal Weight)
+        public async Task<IActionResult> Create(string UserId, string Content, string FromLocation, string ToLocation, decimal Weight)
         {
-            IReliableDictionary<int, Request> requestsDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<int, Request>>(RequestsDictName);
+            IReliableDictionary<string, Request> requestsDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, Request>>(RequestsDictName);
 
-            Request newRequest = new Request { RequestId = RequestIdCount, UserId = UserId, Content = Content, FromLocation = FromLocation, ToLocation = ToLocation, Weight = Weight, Status = RequestStatus.NotHandled };
+            string newId = "R" + FromLocation[0] + RequestIdCount++;
+
+            Request newRequest = new Request { RequestId = newId, UserId = UserId, Content = Content, FromLocation = FromLocation, ToLocation = ToLocation, Weight = Weight, Status = RequestStatus.NotHandled };
 
             using (ITransaction tx = this.stateManager.CreateTransaction())
             {
-                await requestsDictionary.AddAsync(tx, RequestIdCount++, newRequest);
+                await requestsDictionary.AddAsync(tx, newId, newRequest);
                 await tx.CommitAsync();
             }
 
@@ -92,15 +93,15 @@ namespace Requests.Controllers
 
         // PATCH InternalRequests/{id}
         [HttpPatch("{id}")]
-        public async Task<IActionResult> ChangeStatus(int id, int Status)
+        public async Task<IActionResult> ChangeStatus(string id, int Status)
         {
             CancellationToken ct = new CancellationToken();
-            IReliableDictionary<int, Request> requestsDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<int, Request>>(RequestsDictName);
+            IReliableDictionary<string, Request> requestsDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, Request>>(RequestsDictName);
 
             using (ITransaction tx = stateManager.CreateTransaction())
             {
-                Microsoft.ServiceFabric.Data.IAsyncEnumerable<KeyValuePair<int, Request>> list = await requestsDictionary.CreateEnumerableAsync(tx);
-                Microsoft.ServiceFabric.Data.IAsyncEnumerator<KeyValuePair<int, Request>> enumerator = list.GetAsyncEnumerator();
+                Microsoft.ServiceFabric.Data.IAsyncEnumerable<KeyValuePair<string, Request>> list = await requestsDictionary.CreateEnumerableAsync(tx);
+                Microsoft.ServiceFabric.Data.IAsyncEnumerator<KeyValuePair<string, Request>> enumerator = list.GetAsyncEnumerator();
 
                 while (await enumerator.MoveNextAsync(ct))
                 {
