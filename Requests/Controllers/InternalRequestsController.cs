@@ -16,7 +16,6 @@ namespace Requests.Controllers
     public class InternalRequestsController : Controller
     {
         private const string RequestsDictName = "requests";
-        private static int RequestIdCount = 0;
         private readonly IReliableStateManager stateManager;
 
         public InternalRequestsController(IReliableStateManager stateManager)
@@ -78,7 +77,7 @@ namespace Requests.Controllers
         {
             IReliableDictionary<string, Request> requestsDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, Request>>(RequestsDictName);
 
-            string newId = "R" + FromLocation[0] + RequestIdCount++;
+            string newId = "R" + FromLocation[0] + "-" + Guid.NewGuid().ToString();
 
             Request newRequest = new Request { RequestId = newId, UserId = UserId, Content = Content, FromLocation = FromLocation, ToLocation = ToLocation, Weight = Weight, Status = RequestStatus.NotHandled };
 
@@ -105,8 +104,9 @@ namespace Requests.Controllers
 
                 while (await enumerator.MoveNextAsync(ct))
                 {
-                    if (enumerator.Current.Key == id) {
-                        enumerator.Current.Value.Status = (RequestStatus) Status;
+                    if (enumerator.Current.Key == id)
+                    {
+                        enumerator.Current.Value.Status = (RequestStatus)Status;
                         await requestsDictionary.AddOrUpdateAsync(tx, id, enumerator.Current.Value, (key, oldvalue) => enumerator.Current.Value);
 
                         return Json(enumerator.Current.Value);

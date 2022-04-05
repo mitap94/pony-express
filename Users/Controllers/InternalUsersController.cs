@@ -18,7 +18,6 @@ namespace Users.Controllers
     public class InternalUsersController : Controller
     {
         private const string usersDictName = "users";
-        private static int UserIdCount = 0;
         private readonly IReliableStateManager stateManager;
         private readonly StatefulServiceContext serviceContext;
 
@@ -90,12 +89,13 @@ namespace Users.Controllers
 
             IReliableDictionary<string, User> usersDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, User>>(usersDictName);
 
-            string newId = "U" + City[0] + UserIdCount++;
+            string newId = "U" + City[0] + "-" + Guid.NewGuid().ToString();
 
             User newUser = new User { Id = newId, Name = Name, City = City, Type = (UserType) Type };
 
             using (ITransaction tx = this.stateManager.CreateTransaction())
             {
+                ServiceEventSource.Current.ServiceMessage(serviceContext, $"InternalUsersController UserId = {newId}");
                 await usersDictionary.AddAsync(tx, newId, newUser);
                 await tx.CommitAsync();
             }
