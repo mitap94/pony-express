@@ -30,6 +30,8 @@ namespace ManagementAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
+            ManagementAPI.RegisterGeneralRequestForMetrics();
+
             // Calling InternalRequests 
             Uri serviceName = Utils.GetRequestsServiceName(this.serviceContext);
             Uri proxyAddress = Utils.GetProxyAddress(serviceName);
@@ -65,6 +67,8 @@ namespace ManagementAPI.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string Id)
         {
+            ManagementAPI.RegisterGeneralRequestForMetrics();
+
             // Calling InternalRequests 
             Uri serviceName = Utils.GetRequestsServiceName(this.serviceContext);
             Uri proxyAddress = Utils.GetProxyAddress(serviceName);
@@ -103,6 +107,8 @@ namespace ManagementAPI.Controllers
         [HttpPost("create")]
         public async Task<IActionResult> Create(string UserId, string Content, string FromLocation, string ToLocation, decimal Weight)
         {
+            ManagementAPI.RegisterParcelRequestCreationForMetrics();
+
             // Calling InternalRequests
             Uri serviceName = Utils.GetRequestsServiceName(this.serviceContext);
             Uri proxyAddress = Utils.GetProxyAddress(serviceName);
@@ -128,6 +134,25 @@ namespace ManagementAPI.Controllers
         [HttpPatch("{id}")]
         public async Task<IActionResult> ChangeStatus(string id, int Status)
         {
+            switch (Status)
+            {
+                case 1:
+                    {
+                        ManagementAPI.RegisterParcelRequestDenialForMetrics();
+                        break;
+                    }
+                case 2:
+                    {
+                        ManagementAPI.RegisterParcelRequestApprovalForMetrics();
+                        break;
+                    }
+                default:
+                    {
+                        ManagementAPI.RegisterGeneralRequestForMetrics();
+                        break;
+                    }
+            }
+
             // Calling InternalRequests
             Uri serviceName = Utils.GetRequestsServiceName(this.serviceContext);
             Uri proxyAddress = Utils.GetProxyAddress(serviceName);

@@ -30,6 +30,8 @@ namespace ManagementAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
+            ManagementAPI.RegisterGeneralRequestForMetrics();
+
             // Calling InternalParcels 
             Uri serviceName = Utils.GetParcelsServiceName(this.serviceContext);
             Uri proxyAddress = Utils.GetProxyAddress(serviceName);
@@ -65,6 +67,8 @@ namespace ManagementAPI.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string Id)
         {
+            ManagementAPI.RegisterGeneralRequestForMetrics();
+
             // Calling InternalParcels 
             Uri serviceName = Utils.GetParcelsServiceName(this.serviceContext);
             Uri proxyAddress = Utils.GetProxyAddress(serviceName);
@@ -103,6 +107,8 @@ namespace ManagementAPI.Controllers
         [HttpPost("create")]
         public async Task<IActionResult> Create(string RequestId)
         {
+            ManagementAPI.RegisterGeneralRequestForMetrics();
+
             // Calling InternalParcels
             Uri serviceName = Utils.GetParcelsServiceName(this.serviceContext);
             Uri proxyAddress = Utils.GetProxyAddress(serviceName);
@@ -127,6 +133,30 @@ namespace ManagementAPI.Controllers
         [HttpPatch("{id}")]
         public async Task<IActionResult> ChangeStatus(string id, int Status)
         {
+            switch (Status)
+            {
+                case 1:
+                    {
+                        ManagementAPI.RegisterParcelPickupForMetrics();
+                        break;
+                    }
+                case 2:
+                    {
+                        ManagementAPI.RegisterParcelDeliveryForMetrics();
+                        break;
+                    }
+                case 3:
+                    {
+                        ManagementAPI.RegisterGeneralRequestForMetrics();
+                        break;
+                    }
+                default:
+                    {
+                        ManagementAPI.RegisterGeneralRequestForMetrics();
+                        break;
+                    }
+            }
+
             // Calling InternalParcels
             Uri serviceName = Utils.GetParcelsServiceName(this.serviceContext);
             Uri proxyAddress = Utils.GetProxyAddress(serviceName);

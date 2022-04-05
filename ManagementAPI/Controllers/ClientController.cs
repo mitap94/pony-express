@@ -46,13 +46,13 @@ namespace ManagementAPI.Controllers
                 string proxyUrl =
                     $"{proxyAddress}/InternalUsers?PartitionKey={((Int64RangePartitionInformation)partition.PartitionInformation).LowKey}&PartitionKind=Int64Range";
 
-                ServiceEventSource.Current.ServiceMessage(serviceContext, $"ClientController get all addresses {proxyUrl}");
+                ServiceEventSource.Current.ServiceMessage(serviceContext, $"ClientController get all users {proxyUrl}");
 
                 using (HttpResponseMessage response = await this.httpClient.GetAsync(proxyUrl))
                 {
                     if (response.StatusCode != System.Net.HttpStatusCode.OK)
                     {
-                        ServiceEventSource.Current.ServiceMessage(serviceContext, $"ClientController Failed");
+                        ServiceEventSource.Current.ServiceMessage(serviceContext, $"ClientController Failed, status code: {response.StatusCode}, {response.Content.ReadAsStringAsync()}");
                         continue;
                     }
 
@@ -116,7 +116,7 @@ namespace ManagementAPI.Controllers
             string proxyUrl =
                 $"{proxyAddress}/InternalUsers/create?Name={Name}&City={City}&Type={Type}&PartitionKey={Utils.GetUsersPartitionKeyFromCity(City)}&PartitionKind=Int64Range";
 
-            ServiceEventSource.Current.ServiceMessage(serviceContext, $"ClientController create address {proxyUrl}");
+            ServiceEventSource.Current.ServiceMessage(serviceContext, $"ClientController create {proxyUrl}");
 
             using (HttpResponseMessage response = await this.httpClient.PostAsync(proxyUrl, null))
             {

@@ -22,6 +22,8 @@ namespace ManagementAPI
     /// </summary>
     internal sealed class ManagementAPI : StatelessService
     {
+        private static readonly object metricsLock = new object();
+
         private static readonly string TotalRequestsPerMinuteMetricName = "TotalRequestsPerMinute";
         private static readonly TimeSpan MetricsReportingInterval = TimeSpan.FromSeconds(30);
         private static int TotalNumRequestPrevious30s = 0;
@@ -86,40 +88,44 @@ namespace ManagementAPI
         {
             DefineMetricsAndPolicies();
 
+            // Report total number of requests faster - 30s
             _ = Task.Run(async () =>
               {
                   while (true)
                   {
                       cancellationToken.ThrowIfCancellationRequested();
 
-                      // TODO lock on change of counters
                       // Reporting LoadMetrics
-                      ServiceEventSource.Current.ServiceMessage(this.Context, $"ManagementAPI {Context.InstanceId} report {TotalRequestsPerMinuteMetricName} : {TotalNumRequestPrevious30s + TotalNumRequestsThese30s}");
-                      Partition.ReportLoad(new List<LoadMetric> { new LoadMetric(TotalRequestsPerMinuteMetricName, TotalNumRequestPrevious30s + TotalNumRequestsThese30s) });
-                      TotalNumRequestPrevious30s = TotalNumRequestsThese30s;
-                      TotalNumRequestsThese30s = 0;
+                      lock (metricsLock) {
+                          ServiceEventSource.Current.ServiceMessage(this.Context, $"ManagementAPI {Context.InstanceId} report {TotalRequestsPerMinuteMetricName} : {TotalNumRequestPrevious30s + TotalNumRequestsThese30s}");
+                          Partition.ReportLoad(new List<LoadMetric> { new LoadMetric(TotalRequestsPerMinuteMetricName, TotalNumRequestPrevious30s + TotalNumRequestsThese30s) });
+                          TotalNumRequestPrevious30s = TotalNumRequestsThese30s;
+                          TotalNumRequestsThese30s = 0;
+                      }
 
                       await Task.Delay(MetricsReportingInterval, cancellationToken);
                   }
               },cancellationToken);
 
+            // Report all other requests - 60s
             await Task.Run(async () =>
               {
                   while (true)
                   {
                       cancellationToken.ThrowIfCancellationRequested();
 
-                      // TODO lock on change of counters
                       // Reporting LoadMetrics
-                      ServiceEventSource.Current.ServiceMessage(this.Context, $"ManagementAPI {Context.InstanceId} report " +
-                          $"{UserCreationPerMinuteMetricName} : {NumUserCreationsPerMinute},\n" +
-                          $"{ParcelRequestCreationPerMinuteMetricName} : {NumParcelRequestCreationPerMinute},\n" +
-                          $"{ParcelRequestApprovalPerMinuteMetricName} : {NumParcelRequestApprovalPerMinute},\n" +
-                          $"{ParcelRequestDenialPerMinuteMetricName} : {NumParcelRequestDenialPerMinute},\n" +
-                          $"{ParcelPickupPerMinuteMetricName} : {NumParcelPickupPerMinute},\n" +
-                          $"{ParcelDeliveryPerMinuteMetricName} : {NumParcelDeliveryPerMinute}\n");
-                      
-                      Partition.ReportLoad(new List<LoadMetric> {
+                      lock (metricsLock)
+                      {
+                          ServiceEventSource.Current.ServiceMessage(this.Context, $"ManagementAPI {Context.InstanceId} report " +
+                            $"{UserCreationPerMinuteMetricName} : {NumUserCreationsPerMinute},\n" +
+                            $"{ParcelRequestCreationPerMinuteMetricName} : {NumParcelRequestCreationPerMinute},\n" +
+                            $"{ParcelRequestApprovalPerMinuteMetricName} : {NumParcelRequestApprovalPerMinute},\n" +
+                            $"{ParcelRequestDenialPerMinuteMetricName} : {NumParcelRequestDenialPerMinute},\n" +
+                            $"{ParcelPickupPerMinuteMetricName} : {NumParcelPickupPerMinute},\n" +
+                            $"{ParcelDeliveryPerMinuteMetricName} : {NumParcelDeliveryPerMinute}\n");
+
+                          Partition.ReportLoad(new List<LoadMetric> {
                           new LoadMetric(UserCreationPerMinuteMetricName, NumUserCreationsPerMinute),
                           new LoadMetric(ParcelRequestCreationPerMinuteMetricName, NumParcelRequestCreationPerMinute),
                           new LoadMetric(ParcelRequestApprovalPerMinuteMetricName, NumParcelRequestApprovalPerMinute),
@@ -127,13 +133,14 @@ namespace ManagementAPI
                           new LoadMetric(ParcelPickupPerMinuteMetricName, NumParcelPickupPerMinute),
                           new LoadMetric(ParcelDeliveryPerMinuteMetricName, NumParcelDeliveryPerMinute)
                       });
-                      
-                      NumUserCreationsPerMinute = 0;
-                      NumParcelRequestCreationPerMinute = 0;
-                      NumParcelRequestApprovalPerMinute = 0;
-                      NumParcelRequestDenialPerMinute = 0;
-                      NumParcelPickupPerMinute = 0;
-                      NumParcelDeliveryPerMinute = 0;
+
+                          NumUserCreationsPerMinute = 0;
+                          NumParcelRequestCreationPerMinute = 0;
+                          NumParcelRequestApprovalPerMinute = 0;
+                          NumParcelRequestDenialPerMinute = 0;
+                          NumParcelPickupPerMinute = 0;
+                          NumParcelDeliveryPerMinute = 0;
+                      }
 
                       await Task.Delay(LongerMetricsReportingInterval, cancellationToken);
                   }
@@ -143,11 +150,22 @@ namespace ManagementAPI
         private async void DefineMetricsAndPolicies()
         {
             FabricClient fabricClient = new FabricClient();
-
-            // Service description update object
             StatelessServiceUpdateDescription updateDescription = new StatelessServiceUpdateDescription();
 
             // METRICS
+            RegisterMetrics(updateDescription);
+
+            // SCALING
+            RegisterScaling(updateDescription);
+
+           // Update service with metrics and scaling information
+           await fabricClient.ServiceManager.UpdateServiceAsync(Context.ServiceName, updateDescription);
+        }
+
+        private void RegisterMetrics(StatelessServiceUpdateDescription updateDescription)
+        {
+            ServiceEventSource.Current.ServiceMessage(this.Context, $"ManagementAPI {Context.InstanceId} registering metrics {Context.ServiceName}");
+
             StatelessServiceLoadMetricDescription RequestsPerMinuteMetric = new StatelessServiceLoadMetricDescription
             {
                 Name = TotalRequestsPerMinuteMetricName,
@@ -203,8 +221,10 @@ namespace ManagementAPI
             updateDescription.Metrics.Add(ParcelRequestDenialPerMinuteMetric);
             updateDescription.Metrics.Add(ParcelPickupPerMinuteMetric);
             updateDescription.Metrics.Add(ParcelDeliveryPerMinuteMetric);
+        }
 
-            // SCALING
+        private void RegisterScaling(StatelessServiceUpdateDescription updateDescription)
+        {
             PartitionInstanceCountScaleMechanism mechanism = new PartitionInstanceCountScaleMechanism
             {
                 MaxInstanceCount = 10,
@@ -230,22 +250,67 @@ namespace ManagementAPI
                 updateDescription.ScalingPolicies = new List<ScalingPolicyDescription>();
             }
             updateDescription.ScalingPolicies.Add(policy);
-
-            ServiceEventSource.Current.ServiceMessage(this.Context, $"ManagementAPI {Context.InstanceId} registering metrics {Context.ServiceName}");
-
-            // Add all updates
-            await fabricClient.ServiceManager.UpdateServiceAsync(Context.ServiceName, updateDescription);
         }
 
-        // TODO lock when updating metrics
         public static void RegisterGeneralRequestForMetrics() {
-            TotalNumRequestsThese30s++;
+            lock (metricsLock)
+            {
+                TotalNumRequestsThese30s++;
+            }
         }
 
         public static void RegisterUserCreationsForMetrics()
         {
-            NumUserCreationsPerMinute++;
-            TotalNumRequestsThese30s++;
+            lock (metricsLock)
+            {
+                NumUserCreationsPerMinute++;
+                TotalNumRequestsThese30s++;
+            }
+        }
+
+        public static void RegisterParcelRequestCreationForMetrics()
+        {
+            lock (metricsLock)
+            {
+                NumParcelRequestCreationPerMinute++;
+                TotalNumRequestsThese30s++;
+            }
+        }
+
+        public static void RegisterParcelRequestApprovalForMetrics()
+        {
+            lock (metricsLock)
+            {
+                NumParcelRequestApprovalPerMinute++;
+                TotalNumRequestsThese30s++;
+            }
+        }
+
+        public static void RegisterParcelRequestDenialForMetrics()
+        {
+            lock (metricsLock)
+            {
+                NumParcelRequestDenialPerMinute++;
+                TotalNumRequestsThese30s++;
+            }
+        }
+
+        public static void RegisterParcelPickupForMetrics()
+        {
+            lock (metricsLock)
+            {
+                NumParcelPickupPerMinute++;
+                TotalNumRequestsThese30s++;
+            }
+        }
+
+        public static void RegisterParcelDeliveryForMetrics()
+        {
+            lock (metricsLock)
+            {
+                NumParcelDeliveryPerMinute++;
+                TotalNumRequestsThese30s++;
+            }
         }
     }
 }
