@@ -48,6 +48,9 @@ namespace ManagementAPI
         private static readonly string ParcelDeliveryPerMinuteMetricName = "ParcelDeliveryPerMinute";
         private static int NumParcelDeliveryPerMinute = 0;
 
+        private static readonly string ParcelFailedDeliveryPerMinuteMetricName = "ParcelFailedDeliveryPerMinute";
+        private static int NumParcelFailedDeliveryPerMinute = 0;
+
 
         private static readonly TimeSpan ScaleInterval = TimeSpan.FromMinutes(1);
 
@@ -123,7 +126,8 @@ namespace ManagementAPI
                             $"{ParcelRequestApprovalPerMinuteMetricName} : {NumParcelRequestApprovalPerMinute},\n" +
                             $"{ParcelRequestDenialPerMinuteMetricName} : {NumParcelRequestDenialPerMinute},\n" +
                             $"{ParcelPickupPerMinuteMetricName} : {NumParcelPickupPerMinute},\n" +
-                            $"{ParcelDeliveryPerMinuteMetricName} : {NumParcelDeliveryPerMinute}\n");
+                            $"{ParcelDeliveryPerMinuteMetricName} : {NumParcelDeliveryPerMinute}\n" +
+                            $"{ParcelFailedDeliveryPerMinuteMetricName} : {NumParcelFailedDeliveryPerMinute}\n");
 
                           Partition.ReportLoad(new List<LoadMetric> {
                           new LoadMetric(UserCreationPerMinuteMetricName, NumUserCreationsPerMinute),
@@ -131,7 +135,8 @@ namespace ManagementAPI
                           new LoadMetric(ParcelRequestApprovalPerMinuteMetricName, NumParcelRequestApprovalPerMinute),
                           new LoadMetric(ParcelRequestDenialPerMinuteMetricName, NumParcelRequestDenialPerMinute),
                           new LoadMetric(ParcelPickupPerMinuteMetricName, NumParcelPickupPerMinute),
-                          new LoadMetric(ParcelDeliveryPerMinuteMetricName, NumParcelDeliveryPerMinute)
+                          new LoadMetric(ParcelDeliveryPerMinuteMetricName, NumParcelDeliveryPerMinute),
+                          new LoadMetric(ParcelFailedDeliveryPerMinuteMetricName, NumParcelFailedDeliveryPerMinute)
                       });
 
                           NumUserCreationsPerMinute = 0;
@@ -140,6 +145,7 @@ namespace ManagementAPI
                           NumParcelRequestDenialPerMinute = 0;
                           NumParcelPickupPerMinute = 0;
                           NumParcelDeliveryPerMinute = 0;
+                          NumParcelFailedDeliveryPerMinute = 0;
                       }
 
                       await Task.Delay(LongerMetricsReportingInterval, cancellationToken);
@@ -208,6 +214,12 @@ namespace ManagementAPI
                 DefaultLoad = 0,
                 Weight = ServiceLoadMetricWeight.High
             };
+            StatelessServiceLoadMetricDescription ParcelFailedDeliveryPerMinuteMetric = new StatelessServiceLoadMetricDescription
+            {
+                Name = ParcelFailedDeliveryPerMinuteMetricName,
+                DefaultLoad = 0,
+                Weight = ServiceLoadMetricWeight.High
+            };
 
             // Adding metrics to update description
             if (updateDescription.Metrics == null)
@@ -221,6 +233,7 @@ namespace ManagementAPI
             updateDescription.Metrics.Add(ParcelRequestDenialPerMinuteMetric);
             updateDescription.Metrics.Add(ParcelPickupPerMinuteMetric);
             updateDescription.Metrics.Add(ParcelDeliveryPerMinuteMetric);
+            updateDescription.Metrics.Add(ParcelFailedDeliveryPerMinuteMetric);
         }
 
         private void RegisterScaling(StatelessServiceUpdateDescription updateDescription)
@@ -309,6 +322,15 @@ namespace ManagementAPI
             lock (metricsLock)
             {
                 NumParcelDeliveryPerMinute++;
+                TotalNumRequestsThese30s++;
+            }
+        }
+
+        public static void RegisterParcelFailedDeliveryForMetrics()
+        {
+            lock (metricsLock)
+            {
+                NumParcelFailedDeliveryPerMinute++;
                 TotalNumRequestsThese30s++;
             }
         }

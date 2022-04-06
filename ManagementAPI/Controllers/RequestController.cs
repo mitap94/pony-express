@@ -161,7 +161,7 @@ namespace ManagementAPI.Controllers
                 $"{proxyAddress}/InternalRequests/{id}?Status={Status}" +
                 $"&PartitionKey={Utils.GetRequestsPartitionKeyFromId(id)}&PartitionKind=Int64Range";
 
-            ServiceEventSource.Current.ServiceMessage(serviceContext, $"RequestController create address {proxyUrl}");
+            ServiceEventSource.Current.ServiceMessage(serviceContext, $"RequestController patch address {proxyUrl}");
 
             using (HttpResponseMessage response = await this.httpClient.PatchAsync(proxyUrl, null))
             {

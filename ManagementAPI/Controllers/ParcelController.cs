@@ -147,7 +147,7 @@ namespace ManagementAPI.Controllers
                     }
                 case 3:
                     {
-                        ManagementAPI.RegisterGeneralRequestForMetrics();
+                        ManagementAPI.RegisterParcelFailedDeliveryForMetrics();
                         break;
                     }
                 default:
@@ -165,7 +165,7 @@ namespace ManagementAPI.Controllers
                 $"{proxyAddress}/InternalParcels/{id}?Status={Status}" +
                 $"&PartitionKey={Utils.GetParcelsPartitionKeyFromId(id)}&PartitionKind=Int64Range";
 
-            ServiceEventSource.Current.ServiceMessage(serviceContext, $"ParcelController create address {proxyUrl}");
+            ServiceEventSource.Current.ServiceMessage(serviceContext, $"ParcelController patch address {proxyUrl}");
 
             using (HttpResponseMessage response = await this.httpClient.PatchAsync(proxyUrl, null))
             {
