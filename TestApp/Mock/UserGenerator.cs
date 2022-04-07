@@ -1,9 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Users.Models;
 
@@ -17,11 +14,7 @@ namespace Tester.Mock
 
         public static async Task CreateRandomUser()
         {
-            Console.WriteLine($"CREATE USER");
-
             string URL = UserAPIEndpoint + $"create?Name={Data.GetRandomName()}&City={Data.GetRandomCity()}";
-
-            Console.WriteLine($"Started create random user... URL = {URL}");
 
             using (HttpResponseMessage response = await httpClient.PostAsync(URL, null))
             {
@@ -31,9 +24,8 @@ namespace Tester.Mock
                     return;
                 }
 
-                Console.WriteLine("Deserialize");
                 User newUser = JsonConvert.DeserializeObject<User> (await response.Content.ReadAsStringAsync());
-                Console.WriteLine($"UserGenerator CreateRandomUser {newUser.Name}, {newUser.City}");
+                Console.WriteLine($"CREATE USER {newUser.Id}, {newUser.Name}, {newUser.City}");
 
                 Data.CreatedUserList.Add(newUser);
                 Console.WriteLine($"User list size: {Data.CreatedUserList.Count}");

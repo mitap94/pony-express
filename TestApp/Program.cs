@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Tester.Mock;
@@ -12,9 +9,9 @@ namespace Tester
     {
         static async Task Main(string[] args)
         {
-            Console.WriteLine("Starting test app...");
+            Console.WriteLine("Starting TestApp...");
 
-            Thread.Sleep(5000);
+            Thread.Sleep(3000);
             Console.WriteLine();
 
             Console.WriteLine("Fill the app with 3 initial users and 3 initial requests");
@@ -24,17 +21,20 @@ namespace Tester
                 await RequestGenerator.CreateRandomRequest();
             }
 
-            Thread.Sleep(5000);
             Console.WriteLine();
+            Console.WriteLine();
+            Thread.Sleep(3000);
 
             Console.WriteLine("Starting random API testing");
-            Thread.Sleep(5000);
+            Thread.Sleep(3000);
             Console.WriteLine();
             while (true) {
                 await PickRandomAPI();
 
-                Console.WriteLine("Sleep 1s....");
+                Console.WriteLine();
+                Console.WriteLine(".......");
                 Thread.Sleep(1000);
+                Console.WriteLine();
             }
         }
 

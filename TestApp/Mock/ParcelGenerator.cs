@@ -1,10 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Parcels.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Tester.Mock
@@ -17,11 +14,9 @@ namespace Tester.Mock
 
         public static async Task CreateParcel(string RequestId)
         {
-            Console.WriteLine($"CREATE PARCEL");
+            Console.WriteLine($"CREATE PARCEL {RequestId}");
 
             string URL = ParcelAPIEndpoint + $"create?RequestId={RequestId}";
-
-            Console.WriteLine($"Started create parcel... URL = {URL}");
 
             using (HttpResponseMessage response = await httpClient.PostAsync(URL, null))
             {
@@ -31,12 +26,10 @@ namespace Tester.Mock
                     return;
                 }
 
-                Console.WriteLine("Deserialize");
                 Parcel newParcel = JsonConvert.DeserializeObject<Parcel>(await response.Content.ReadAsStringAsync());
-                Console.WriteLine($"ParcelGenerator CreateParcel {newParcel.RequestId}");
 
                 Data.PendingParcelList.Add(newParcel);
-                Console.WriteLine($"Parcel list size: {Data.PendingParcelList.Count}");
+                Console.WriteLine($"Pending parcel list size: {Data.PendingParcelList.Count}");
             }
         }
 
@@ -94,13 +87,13 @@ namespace Tester.Mock
         {
             switch (new Random().Next(10))
             {
-                case 0:
+                case 0: // GetAllParcels
                     await GetAllParcels();
                     break;
                 case 1:
                 case 2:
                 case 3:
-                case 4:
+                case 4: // GetParcel
                     if (Data.PendingParcelList.Count > 0) {
                         await GetParcel(Data.GetRandomParcel().RequestId);
                     } else
@@ -112,7 +105,7 @@ namespace Tester.Mock
                 case 6:
                 case 7:
                 case 8:
-                case 9:
+                case 9: // Change Status
                     if (Data.PendingParcelList.Count <= 0)
                     {
                         await GetAllParcels();
@@ -121,6 +114,7 @@ namespace Tester.Mock
 
                     Parcel parcel = Data.GetRandomParcel();
 
+                    // Fail 1/4 parcels
                     switch (new Random().Next(4))
                     {
                         case 0:

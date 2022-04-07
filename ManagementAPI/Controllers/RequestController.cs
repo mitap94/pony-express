@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Fabric;
 using System.Fabric.Query;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -45,7 +44,7 @@ namespace ManagementAPI.Controllers
                 string proxyUrl =
                     $"{proxyAddress}/InternalRequests?PartitionKey={((Int64RangePartitionInformation)partition.PartitionInformation).LowKey}&PartitionKind=Int64Range";
 
-                ServiceEventSource.Current.ServiceMessage(serviceContext, $"RequestController get all addresses {proxyUrl}");
+                ServiceEventSource.Current.ServiceMessage(serviceContext, $"RequestController GET {proxyUrl}");
 
                 using (HttpResponseMessage response = await this.httpClient.GetAsync(proxyUrl))
                 {
@@ -55,7 +54,6 @@ namespace ManagementAPI.Controllers
                         continue;
                     }
 
-                    ServiceEventSource.Current.ServiceMessage(serviceContext, $"RequestController Successful");
                     result.AddRange(JsonConvert.DeserializeObject<List<Request>>(await response.Content.ReadAsStringAsync()));
                 }
             }
@@ -78,7 +76,7 @@ namespace ManagementAPI.Controllers
             string proxyUrl =
                 $"{proxyAddress}/InternalRequests/{Id}?PartitionKey={Utils.GetRequestsPartitionKeyFromId(Id)}&PartitionKind=Int64Range";
 
-            ServiceEventSource.Current.ServiceMessage(serviceContext, $"RequestController get address {proxyUrl}");
+            ServiceEventSource.Current.ServiceMessage(serviceContext, $"RequestController GET {proxyUrl}");
 
             using (HttpResponseMessage response = await this.httpClient.GetAsync(proxyUrl))
             {
@@ -92,7 +90,6 @@ namespace ManagementAPI.Controllers
                 }
                 else
                 {
-                    ServiceEventSource.Current.ServiceMessage(serviceContext, $"RequestController Succesful returning Content result, status code = {response.StatusCode}");
                     return new ContentResult()
                     {
                         StatusCode = (int)response.StatusCode,
@@ -117,7 +114,7 @@ namespace ManagementAPI.Controllers
                 $"{proxyAddress}/InternalRequests/create?UserId={UserId}&Content={Content}&FromLocation={FromLocation}&ToLocation={ToLocation}&Weight={Weight}" +
                 $"&PartitionKey={Utils.GetRequestsPartitionKeyFromCity(FromLocation)}&PartitionKind=Int64Range";
 
-            ServiceEventSource.Current.ServiceMessage(serviceContext, $"RequestController create address {proxyUrl}");
+            ServiceEventSource.Current.ServiceMessage(serviceContext, $"RequestController POST {proxyUrl}");
 
             using (HttpResponseMessage response = await this.httpClient.PostAsync(proxyUrl, null))
             {
@@ -161,7 +158,7 @@ namespace ManagementAPI.Controllers
                 $"{proxyAddress}/InternalRequests/{id}?Status={Status}" +
                 $"&PartitionKey={Utils.GetRequestsPartitionKeyFromId(id)}&PartitionKind=Int64Range";
 
-            ServiceEventSource.Current.ServiceMessage(serviceContext, $"RequestController patch address {proxyUrl}");
+            ServiceEventSource.Current.ServiceMessage(serviceContext, $"RequestController PATCH {proxyUrl}");
 
             using (HttpResponseMessage response = await this.httpClient.PatchAsync(proxyUrl, null))
             {

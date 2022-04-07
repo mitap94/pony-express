@@ -4,8 +4,6 @@ using Microsoft.ServiceFabric.Data.Collections;
 using System;
 using System.Collections.Generic;
 using System.Fabric;
-using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Users.Models;
@@ -31,8 +29,6 @@ namespace Users.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            ServiceEventSource.Current.ServiceMessage(serviceContext, $"InternalUsersController getting all users");
-
             CancellationToken ct = new CancellationToken();
 
             IReliableDictionary<string, User> usersDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, User>>(usersDictName);
@@ -46,7 +42,6 @@ namespace Users.Controllers
 
                 while (await enumerator.MoveNextAsync(ct))
                 {
-                    ServiceEventSource.Current.ServiceMessage(serviceContext, $"InternalUsersController {enumerator.Current.Value.Id} {enumerator.Current.Value.Name}");
                     result.Add(enumerator.Current.Value);
                 }
 
@@ -58,8 +53,6 @@ namespace Users.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(string Id)
         {
-            ServiceEventSource.Current.ServiceMessage(serviceContext, $"InternalUsersController getting user: {Id}");
-
             CancellationToken ct = new CancellationToken();
             IReliableDictionary<string, User> usersDictionary = await stateManager.GetOrAddAsync<IReliableDictionary<string, User>>(usersDictName);
 
@@ -70,12 +63,10 @@ namespace Users.Controllers
 
                 while (await enumerator.MoveNextAsync(ct))
                 {
-                    ServiceEventSource.Current.ServiceMessage(serviceContext, $"InternalUsersController while current user = {enumerator.Current.Value.Id}");
                     if (enumerator.Current.Key == Id)
                         return new JsonResult(enumerator.Current.Value);
                 }
 
-                ServiceEventSource.Current.ServiceMessage(serviceContext, $"InternalUsersController return NotFoundResult");
                 return NotFound();
             }
             
@@ -85,8 +76,6 @@ namespace Users.Controllers
         [HttpPost("create")]
         public async Task<IActionResult> Create(string Name, string City, int Type)
         {
-            ServiceEventSource.Current.ServiceMessage(serviceContext, $"InternalUsersController creating user");
-
             IReliableDictionary<string, User> usersDictionary = await this.stateManager.GetOrAddAsync<IReliableDictionary<string, User>>(usersDictName);
 
             string newId = "U" + City[0] + "-" + Guid.NewGuid().ToString();
@@ -95,7 +84,6 @@ namespace Users.Controllers
 
             using (ITransaction tx = this.stateManager.CreateTransaction())
             {
-                ServiceEventSource.Current.ServiceMessage(serviceContext, $"InternalUsersController UserId = {newId}");
                 await usersDictionary.AddAsync(tx, newId, newUser);
                 await tx.CommitAsync();
             }

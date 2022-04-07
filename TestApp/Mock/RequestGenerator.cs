@@ -1,10 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Requests.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Tester.Mock
@@ -17,26 +14,21 @@ namespace Tester.Mock
 
         public static async Task CreateRandomRequest()
         {
-            Console.WriteLine($"CREATE REQUEST");
-
             string URL = RequestAPIEndpoint + $"create?UserId={Data.GetRandomUser().Id}&Content={Data.GetRandomContent()}&FromLocation={Data.GetRandomCity()}&ToLocation={Data.GetRandomCity()}&Weight={Data.GetRandomWeight()}";
-
-            Console.WriteLine($"Started create request... URL = {URL}");
 
             using (HttpResponseMessage response = await httpClient.PostAsync(URL, null))
             {
                 if (response.StatusCode != System.Net.HttpStatusCode.OK)
                 {
-                    Console.WriteLine($"RequestGenerator CreateRequest failed, status code: {response.StatusCode}, { await response.Content.ReadAsStringAsync()}");
+                    Console.WriteLine($"RequestGenerator CreateRandomRequest failed, status code: {response.StatusCode}, { await response.Content.ReadAsStringAsync()}");
                     return;
                 }
 
-                Console.WriteLine("Deserialize");
                 Request newRequest = JsonConvert.DeserializeObject<Request>(await response.Content.ReadAsStringAsync());
-                Console.WriteLine($"RequestGenerator CreateRequest {newRequest.RequestId}, {newRequest.UserId}, {newRequest.Content}, {newRequest.FromLocation}, {newRequest.ToLocation}, {newRequest.Weight}");
+                Console.WriteLine($"CREATE REQUEST {newRequest.RequestId}, {newRequest.UserId}, {newRequest.Content}, {newRequest.FromLocation}, {newRequest.ToLocation}, {newRequest.Weight}");
 
                 Data.PendingRequestList.Add(newRequest);
-                Console.WriteLine($"Request list size: {Data.PendingRequestList.Count}");
+                Console.WriteLine($"Pending request list size: {Data.PendingRequestList.Count}");
             }
         }
 
@@ -97,14 +89,14 @@ namespace Tester.Mock
                 case 0:
                 case 1:
                 case 2:
-                case 3:
+                case 3: // CreateRandomRequest
                     await CreateRandomRequest();
                     break;
-                case 4:
+                case 4: // GetAllRequests
                     await GetAllRequests();
                     break;
                 case 5:
-                case 6:
+                case 6: // GetRequest
                     if (Data.PendingRequestList.Count > 0) {
                         await GetRequest(Data.GetRandomRequest().RequestId);
                     } else
@@ -114,7 +106,7 @@ namespace Tester.Mock
                     break;
                 case 7:
                 case 8:
-                case 9:
+                case 9: // ChangeStatus
                     if (Data.PendingRequestList.Count <= 0)
                     {
                         await GetAllRequests();
@@ -123,6 +115,7 @@ namespace Tester.Mock
                  
                     Request req = Data.GetRandomRequest();
 
+                    // Deny 1/4 requests
                     switch (new Random().Next(4))
                     {
                         case 0:

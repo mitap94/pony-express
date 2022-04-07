@@ -1,12 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Fabric;
 using System.Fabric.Query;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Users.Models;
 using Common;
@@ -46,7 +44,7 @@ namespace ManagementAPI.Controllers
                 string proxyUrl =
                     $"{proxyAddress}/InternalUsers?PartitionKey={((Int64RangePartitionInformation)partition.PartitionInformation).LowKey}&PartitionKind=Int64Range";
 
-                ServiceEventSource.Current.ServiceMessage(serviceContext, $"ClientController get all users {proxyUrl}");
+                ServiceEventSource.Current.ServiceMessage(serviceContext, $"ClientController GET {proxyUrl}");
 
                 using (HttpResponseMessage response = await this.httpClient.GetAsync(proxyUrl))
                 {
@@ -56,7 +54,6 @@ namespace ManagementAPI.Controllers
                         continue;
                     }
 
-                    ServiceEventSource.Current.ServiceMessage(serviceContext, $"ClientController Successful");
                     result.AddRange(JsonConvert.DeserializeObject<List<User>>(await response.Content.ReadAsStringAsync()));
                 }
             }
@@ -79,7 +76,7 @@ namespace ManagementAPI.Controllers
             string proxyUrl =
                 $"{proxyAddress}/InternalUsers/{id}?PartitionKey={Utils.GetUsersPartitionKeyFromId(id)}&PartitionKind=Int64Range";
 
-            ServiceEventSource.Current.ServiceMessage(serviceContext, $"ClientController get address {proxyUrl}");
+            ServiceEventSource.Current.ServiceMessage(serviceContext, $"ClientController GET {proxyUrl}");
 
             using (HttpResponseMessage response = await this.httpClient.GetAsync(proxyUrl))
             {
@@ -92,7 +89,6 @@ namespace ManagementAPI.Controllers
                     };
                 } else
                 {
-                    ServiceEventSource.Current.ServiceMessage(serviceContext, $"ClientController Succesful returning Content result, status code = {response.StatusCode}");
                     return new ContentResult()
                     {
                         StatusCode = (int)response.StatusCode,
@@ -116,7 +112,7 @@ namespace ManagementAPI.Controllers
             string proxyUrl =
                 $"{proxyAddress}/InternalUsers/create?Name={Name}&City={City}&Type={Type}&PartitionKey={Utils.GetUsersPartitionKeyFromCity(City)}&PartitionKind=Int64Range";
 
-            ServiceEventSource.Current.ServiceMessage(serviceContext, $"ClientController create {proxyUrl}");
+            ServiceEventSource.Current.ServiceMessage(serviceContext, $"ClientController POST {proxyUrl}");
 
             using (HttpResponseMessage response = await this.httpClient.PostAsync(proxyUrl, null))
             {
