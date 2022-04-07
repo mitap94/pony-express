@@ -1,0 +1,329 @@
+{
+	"info": {
+		"_postman_id": "eb63feea-22f2-4151-9968-2b3816f3ccd3",
+		"name": "Package Delivery",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "CreateUser",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:19081/PackageDelivery/ManagementAPI/api/users/create?Name={{Name}}&City={{City}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "19081",
+							"path": [
+								"PackageDelivery",
+								"ManagementAPI",
+								"api",
+								"users",
+								"create"
+							],
+							"query": [
+								{
+									"key": "Type",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "Name",
+									"value": "{{Name}}"
+								},
+								{
+									"key": "City",
+									"value": "{{City}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetUser",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:19081/PackageDelivery/ManagementAPI/api/users/{{id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "19081",
+							"path": [
+								"PackageDelivery",
+								"ManagementAPI",
+								"api",
+								"users",
+								"{{id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetAllUsers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:19081/PackageDelivery/ManagementAPI/api/users",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "19081",
+							"path": [
+								"PackageDelivery",
+								"ManagementAPI",
+								"api",
+								"users"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Request",
+			"item": [
+				{
+					"name": "CreateRequest",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:19081/PackageDelivery/ManagementAPI/api/requests/create?UserId=&Content=&FromLocation=&ToLocation=&Weight=",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "19081",
+							"path": [
+								"PackageDelivery",
+								"ManagementAPI",
+								"api",
+								"requests",
+								"create"
+							],
+							"query": [
+								{
+									"key": "UserId",
+									"value": ""
+								},
+								{
+									"key": "Content",
+									"value": ""
+								},
+								{
+									"key": "FromLocation",
+									"value": ""
+								},
+								{
+									"key": "ToLocation",
+									"value": ""
+								},
+								{
+									"key": "Weight",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetRequest",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:19081/PackageDelivery/ManagementAPI/api/requests/{{id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "19081",
+							"path": [
+								"PackageDelivery",
+								"ManagementAPI",
+								"api",
+								"requests",
+								"{{id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetAllRequests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:19081/PackageDelivery/ManagementAPI/api/requests",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "19081",
+							"path": [
+								"PackageDelivery",
+								"ManagementAPI",
+								"api",
+								"requests"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ChangeStatus",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:19081/PackageDelivery/ManagementAPI/api/requests/{{id}}?Status={{Status}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "19081",
+							"path": [
+								"PackageDelivery",
+								"ManagementAPI",
+								"api",
+								"requests",
+								"{{id}}"
+							],
+							"query": [
+								{
+									"key": "Status",
+									"value": "{{Status}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Parcel",
+			"item": [
+				{
+					"name": "CreateParcel",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:19081/PackageDelivery/ManagementAPI/api/parcels/create?RequestId=",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "19081",
+							"path": [
+								"PackageDelivery",
+								"ManagementAPI",
+								"api",
+								"parcels",
+								"create"
+							],
+							"query": [
+								{
+									"key": "RequestId",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetParcel",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:19081/PackageDelivery/ManagementAPI/api/parcels/{{id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "19081",
+							"path": [
+								"PackageDelivery",
+								"ManagementAPI",
+								"api",
+								"parcels",
+								"{{id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetAllParcels",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:19081/PackageDelivery/ManagementAPI/api/parcels",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "19081",
+							"path": [
+								"PackageDelivery",
+								"ManagementAPI",
+								"api",
+								"parcels"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ChangeStatus",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:19081/PackageDelivery/ManagementAPI/api/parcels/{{id}}?Status={{Status}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "19081",
+							"path": [
+								"PackageDelivery",
+								"ManagementAPI",
+								"api",
+								"parcels",
+								"{{id}}"
+							],
+							"query": [
+								{
+									"key": "Status",
+									"value": "{{Status}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
